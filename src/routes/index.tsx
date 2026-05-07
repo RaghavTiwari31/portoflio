@@ -309,9 +309,6 @@ function Projects() {
               whileHover={{ y: -6 }}
               className="glass group relative h-full overflow-hidden rounded-2xl p-7 transition-all hover:border-white/20 md:p-8"
             >
-              <div className={`pointer-events-none absolute -top-32 -right-32 h-64 w-64 rounded-full blur-3xl opacity-0 transition-opacity duration-500 group-hover:opacity-60 ${
-                p.accent === "cyan" ? "bg-[var(--neon-cyan)]/30" : "bg-[var(--neon-violet)]/30"
-              }`} />
               <div className="relative">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
