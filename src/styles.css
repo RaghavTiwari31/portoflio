@@ -62,12 +62,6 @@
   --neon-violet: oklch(0.7 0.25 295);
   --neon-emerald: oklch(0.78 0.2 160);
 
-  --gradient-mesh: radial-gradient(at 20% 20%, oklch(0.7 0.25 295 / 0.18) 0px, transparent 50%),
-                   radial-gradient(at 80% 30%, oklch(0.85 0.18 200 / 0.15) 0px, transparent 50%),
-                   radial-gradient(at 50% 90%, oklch(0.78 0.2 160 / 0.12) 0px, transparent 50%);
-  --shadow-glow-cyan: 0 0 40px oklch(0.85 0.18 200 / 0.35);
-  --shadow-glow-violet: 0 0 40px oklch(0.7 0.25 295 / 0.4);
-  --shadow-glow-emerald: 0 0 40px oklch(0.78 0.2 160 / 0.35);
 }
 
 @layer base {
@@ -84,34 +78,23 @@
 
 @layer utilities {
   .glass {
-    background: linear-gradient(135deg, oklch(1 0 0 / 0.04), oklch(1 0 0 / 0.01));
+    background: oklch(1 0 0 / 0.03);
     backdrop-filter: blur(18px) saturate(140%);
     -webkit-backdrop-filter: blur(18px) saturate(140%);
     border: 1px solid oklch(1 0 0 / 0.08);
   }
   .glass-strong {
-    background: linear-gradient(135deg, oklch(1 0 0 / 0.07), oklch(1 0 0 / 0.02));
+    background: oklch(1 0 0 / 0.05);
     backdrop-filter: blur(24px) saturate(160%);
     -webkit-backdrop-filter: blur(24px) saturate(160%);
     border: 1px solid oklch(1 0 0 / 0.1);
   }
-  .text-gradient {
-    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-violet));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .mesh-bg {
-    background-image: var(--gradient-mesh);
-  }
-  .glow-cyan { box-shadow: var(--shadow-glow-cyan); }
-  .glow-violet { box-shadow: var(--shadow-glow-violet); }
-  .glow-emerald { box-shadow: var(--shadow-glow-emerald); }
+  .text-accent { color: var(--neon-cyan); }
   .grid-bg {
     background-image:
-      linear-gradient(oklch(1 0 0 / 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, oklch(1 0 0 / 0.03) 1px, transparent 1px);
-    background-size: 60px 60px;
+      linear-gradient(oklch(1 0 0 / 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(1 0 0 / 0.025) 1px, transparent 1px);
+    background-size: 56px 56px;
   }
 }
 

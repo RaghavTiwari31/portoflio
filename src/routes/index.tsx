@@ -126,7 +126,7 @@ function Hero() {
       </Reveal>
       <Reveal delay={0.1}>
         <h1 className="mt-6 text-5xl font-bold tracking-tight md:text-7xl lg:text-8xl">
-          Raghav <span className="text-gradient">Tiwari</span>
+          Raghav <span className="text-accent">Tiwari</span>
         </h1>
       </Reveal>
       <Reveal delay={0.2}>
@@ -228,8 +228,8 @@ function Experience() {
       <SectionHeading id="experience" kicker="03" title="PROFESSIONAL EXPERIENCE" />
       <Reveal>
         <div className="relative pl-8 md:pl-10">
-          <div className="absolute left-0 top-2 bottom-2 w-px bg-gradient-to-b from-[var(--neon-cyan)] via-[var(--neon-violet)] to-transparent" />
-          <div className="absolute left-[-5px] top-3 h-2.5 w-2.5 rounded-full bg-[var(--neon-cyan)] shadow-[0_0_15px_var(--neon-cyan)]" />
+          <div className="absolute left-0 top-2 bottom-2 w-px bg-white/15" />
+          <div className="absolute left-[-5px] top-3 h-2.5 w-2.5 rounded-full bg-[var(--neon-cyan)]" />
           <div className="glass rounded-2xl p-7 md:p-8">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -309,9 +309,6 @@ function Projects() {
               whileHover={{ y: -6 }}
               className="glass group relative h-full overflow-hidden rounded-2xl p-7 transition-all hover:border-white/20 md:p-8"
             >
-              <div className={`pointer-events-none absolute -top-32 -right-32 h-64 w-64 rounded-full blur-3xl opacity-0 transition-opacity duration-500 group-hover:opacity-60 ${
-                p.accent === "cyan" ? "bg-[var(--neon-cyan)]/30" : "bg-[var(--neon-violet)]/30"
-              }`} />
               <div className="relative">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
@@ -476,13 +473,12 @@ function Education() {
       <div className="grid gap-5 md:grid-cols-3">
         <Reveal>
           <div className="glass relative h-full overflow-hidden rounded-2xl p-7 md:col-span-1">
-            <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[var(--neon-cyan)]/10 blur-3xl" />
             <GraduationCap className="h-7 w-7 text-[var(--neon-cyan)]" />
             <div className="mt-4 text-xs uppercase tracking-wider text-muted-foreground">B.Tech · Computer Science</div>
             <h3 className="mt-1 text-lg font-bold">Guru Gobind Singh Indraprastha University</h3>
             <div className="mt-1 text-xs text-muted-foreground">New Delhi, India · Aug 2023 – Aug 2027</div>
             <div className="mt-5 flex items-baseline gap-2">
-              <div className="text-4xl font-bold text-gradient">9.77</div>
+              <div className="text-4xl font-bold text-[var(--neon-cyan)]">9.77</div>
               <div className="text-sm text-muted-foreground">/ 10 CGPA</div>
             </div>
           </div>
@@ -526,9 +522,8 @@ function Certifications() {
             href="https://tinyurl.com/raghavtiwariportfolio"
             target="_blank"
             rel="noreferrer"
-            className="glass group relative block h-full overflow-hidden rounded-2xl p-7 transition-all hover:border-[var(--neon-violet)]/50 hover:shadow-[0_0_40px_oklch(0.7_0.25_295/0.4)]"
+            className="glass group relative block h-full overflow-hidden rounded-2xl p-7 transition-all hover:border-[var(--neon-violet)]/50"
           >
-            <div className="absolute inset-0 -z-0 bg-gradient-to-br from-[var(--neon-violet)]/10 via-transparent to-[var(--neon-cyan)]/10 opacity-50 transition-opacity group-hover:opacity-100" />
             <div className="relative">
               <Sparkles className="h-6 w-6 text-[var(--neon-violet)]" />
               <h3 className="mt-4 text-lg font-bold">Design Portfolio</h3>
