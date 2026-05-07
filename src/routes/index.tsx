@@ -228,8 +228,8 @@ function Experience() {
       <SectionHeading id="experience" kicker="03" title="PROFESSIONAL EXPERIENCE" />
       <Reveal>
         <div className="relative pl-8 md:pl-10">
-          <div className="absolute left-0 top-2 bottom-2 w-px bg-gradient-to-b from-[var(--neon-cyan)] via-[var(--neon-violet)] to-transparent" />
-          <div className="absolute left-[-5px] top-3 h-2.5 w-2.5 rounded-full bg-[var(--neon-cyan)] shadow-[0_0_15px_var(--neon-cyan)]" />
+          <div className="absolute left-0 top-2 bottom-2 w-px bg-white/15" />
+          <div className="absolute left-[-5px] top-3 h-2.5 w-2.5 rounded-full bg-[var(--neon-cyan)]" />
           <div className="glass rounded-2xl p-7 md:p-8">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
