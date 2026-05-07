@@ -89,18 +89,14 @@
     -webkit-backdrop-filter: blur(24px) saturate(160%);
     border: 1px solid oklch(1 0 0 / 0.1);
   }
-  .text-gradient {
-    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-violet));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+  .text-accent-cyan { color: var(--neon-cyan); }
+  .mesh-bg { background-color: var(--background); }
+  .grid-bg {
+    background-image:
+      linear-gradient(oklch(1 0 0 / 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(1 0 0 / 0.025) 1px, transparent 1px);
+    background-size: 56px 56px;
   }
-  .mesh-bg {
-    background-image: var(--gradient-mesh);
-  }
-  .glow-cyan { box-shadow: var(--shadow-glow-cyan); }
-  .glow-violet { box-shadow: var(--shadow-glow-violet); }
-  .glow-emerald { box-shadow: var(--shadow-glow-emerald); }
   .grid-bg {
     background-image:
       linear-gradient(oklch(1 0 0 / 0.03) 1px, transparent 1px),
