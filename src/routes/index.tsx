@@ -522,9 +522,8 @@ function Certifications() {
             href="https://tinyurl.com/raghavtiwariportfolio"
             target="_blank"
             rel="noreferrer"
-            className="glass group relative block h-full overflow-hidden rounded-2xl p-7 transition-all hover:border-[var(--neon-violet)]/50 hover:shadow-[0_0_40px_oklch(0.7_0.25_295/0.4)]"
+            className="glass group relative block h-full overflow-hidden rounded-2xl p-7 transition-all hover:border-[var(--neon-violet)]/50"
           >
-            <div className="absolute inset-0 -z-0 bg-gradient-to-br from-[var(--neon-violet)]/10 via-transparent to-[var(--neon-cyan)]/10 opacity-50 transition-opacity group-hover:opacity-100" />
             <div className="relative">
               <Sparkles className="h-6 w-6 text-[var(--neon-violet)]" />
               <h3 className="mt-4 text-lg font-bold">Design Portfolio</h3>
