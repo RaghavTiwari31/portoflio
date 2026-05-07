@@ -78,30 +78,23 @@
 
 @layer utilities {
   .glass {
-    background: linear-gradient(135deg, oklch(1 0 0 / 0.04), oklch(1 0 0 / 0.01));
+    background: oklch(1 0 0 / 0.03);
     backdrop-filter: blur(18px) saturate(140%);
     -webkit-backdrop-filter: blur(18px) saturate(140%);
     border: 1px solid oklch(1 0 0 / 0.08);
   }
   .glass-strong {
-    background: linear-gradient(135deg, oklch(1 0 0 / 0.07), oklch(1 0 0 / 0.02));
+    background: oklch(1 0 0 / 0.05);
     backdrop-filter: blur(24px) saturate(160%);
     -webkit-backdrop-filter: blur(24px) saturate(160%);
     border: 1px solid oklch(1 0 0 / 0.1);
   }
-  .text-accent-cyan { color: var(--neon-cyan); }
-  .mesh-bg { background-color: var(--background); }
+  .text-accent { color: var(--neon-cyan); }
   .grid-bg {
     background-image:
       linear-gradient(oklch(1 0 0 / 0.025) 1px, transparent 1px),
       linear-gradient(90deg, oklch(1 0 0 / 0.025) 1px, transparent 1px);
     background-size: 56px 56px;
-  }
-  .grid-bg {
-    background-image:
-      linear-gradient(oklch(1 0 0 / 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, oklch(1 0 0 / 0.03) 1px, transparent 1px);
-    background-size: 60px 60px;
   }
 }
 
