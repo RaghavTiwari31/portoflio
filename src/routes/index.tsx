@@ -473,13 +473,12 @@ function Education() {
       <div className="grid gap-5 md:grid-cols-3">
         <Reveal>
           <div className="glass relative h-full overflow-hidden rounded-2xl p-7 md:col-span-1">
-            <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[var(--neon-cyan)]/10 blur-3xl" />
             <GraduationCap className="h-7 w-7 text-[var(--neon-cyan)]" />
             <div className="mt-4 text-xs uppercase tracking-wider text-muted-foreground">B.Tech · Computer Science</div>
             <h3 className="mt-1 text-lg font-bold">Guru Gobind Singh Indraprastha University</h3>
             <div className="mt-1 text-xs text-muted-foreground">New Delhi, India · Aug 2023 – Aug 2027</div>
             <div className="mt-5 flex items-baseline gap-2">
-              <div className="text-4xl font-bold text-gradient">9.77</div>
+              <div className="text-4xl font-bold text-[var(--neon-cyan)]">9.77</div>
               <div className="text-sm text-muted-foreground">/ 10 CGPA</div>
             </div>
           </div>
