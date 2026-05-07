@@ -1,19 +1,11 @@
 import { motion } from "framer-motion";
 import { Github, Linkedin, Mail, ArrowUpRight, MapPin, ExternalLink, Trophy, GraduationCap, Award, BookOpen, Briefcase, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { Reveal } from "@/components/Reveal";
 
-export const Route = createFileRoute("/")({
-  component: Portfolio,
-  head: () => ({
-    meta: [
-      { title: "Raghav Tiwari — Software Engineering Student" },
-      { name: "description", content: "Portfolio of Raghav Tiwari — building AI-powered systems, RAG pipelines and data-driven applications." },
-    ],
-  }),
-});
+
 
 const EMAIL = "raghav31.tiwari@gmail.com";
 const GITHUB = "https://github.com/RaghavTiwari31";
@@ -66,7 +58,7 @@ const ACHIEVEMENTS = [
   },
 ];
 
-function Portfolio() {
+export default function Portfolio() {
   return (
     <div className="relative min-h-screen text-foreground">
       <AnimatedBackground />
