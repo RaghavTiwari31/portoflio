@@ -1,24 +1,30 @@
 import { useEffect, useRef, useState } from "react";
-import { motion, useSpring, useMotionValue } from "framer-motion";
+import { motion, useSpring, useMotionValue, useAnimationFrame } from "framer-motion";
 
 export function MouseCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
   const trailRef = useRef<HTMLDivElement>(null);
   const [isHovering, setIsHovering] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
+  const [orbitAngle, setOrbitAngle] = useState(0);
   
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   
   // Smooth spring for the main cursor
-  const springConfig = { damping: 25, stiffness: 300 };
+  const springConfig = { damping: 20, stiffness: 400 };
   const cursorX = useSpring(mouseX, springConfig);
   const cursorY = useSpring(mouseY, springConfig);
   
-  // Slower spring for the trail
-  const trailConfig = { damping: 35, stiffness: 150 };
+  // Slower spring for the trail ring
+  const trailConfig = { damping: 30, stiffness: 180 };
   const trailX = useSpring(mouseX, trailConfig);
   const trailY = useSpring(mouseY, trailConfig);
+  
+  // Animate the orbiting dot
+  useAnimationFrame((time) => {
+    setOrbitAngle((time / 1000) * 2); // Complete orbit every ~3 seconds
+  });
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -67,10 +73,10 @@ export function MouseCursor() {
 
   return (
     <>
-      {/* Trail / outer ring */}
+      {/* Trail / outer ring with orbiting dot */}
       <motion.div
         ref={trailRef}
-        className="pointer-events-none fixed top-0 left-0 z-[9999] mix-blend-difference"
+        className="pointer-events-none fixed top-0 left-0 z-[9999]"
         style={{
           x: trailX,
           y: trailY,
@@ -79,20 +85,38 @@ export function MouseCursor() {
         }}
       >
         <motion.div
-          className="rounded-full border border-white/30"
+          className="relative rounded-full border"
           animate={{
-            width: isHovering ? 60 : 40,
-            height: isHovering ? 60 : 40,
-            borderColor: isHovering ? "rgba(255, 200, 100, 0.5)" : "rgba(255, 255, 255, 0.3)",
+            width: isHovering ? 56 : 36,
+            height: isHovering ? 56 : 36,
+            borderColor: isHovering ? "rgba(255, 200, 100, 0.6)" : "rgba(255, 255, 255, 0.25)",
+            borderWidth: isHovering ? 1.5 : 1,
           }}
-          transition={{ type: "spring", damping: 20, stiffness: 300 }}
-        />
+          transition={{ type: "spring", damping: 25, stiffness: 350 }}
+        >
+          {/* Orbiting dot */}
+          <motion.div
+            className="absolute rounded-full"
+            animate={{
+              width: isHovering ? 6 : 4,
+              height: isHovering ? 6 : 4,
+              backgroundColor: isHovering ? "#FFC864" : "#FFFFFF",
+            }}
+            style={{
+              left: "50%",
+              top: "50%",
+              x: Math.cos(orbitAngle) * (isHovering ? 28 : 18) - (isHovering ? 3 : 2),
+              y: Math.sin(orbitAngle) * (isHovering ? 28 : 18) - (isHovering ? 3 : 2),
+            }}
+            transition={{ type: "spring", damping: 30, stiffness: 400 }}
+          />
+        </motion.div>
       </motion.div>
 
       {/* Main cursor dot */}
       <motion.div
         ref={cursorRef}
-        className="pointer-events-none fixed top-0 left-0 z-[9999] mix-blend-difference"
+        className="pointer-events-none fixed top-0 left-0 z-[10000]"
         style={{
           x: cursorX,
           y: cursorY,
@@ -101,13 +125,16 @@ export function MouseCursor() {
         }}
       >
         <motion.div
-          className="rounded-full bg-white"
+          className="rounded-full"
           animate={{
-            width: isClicking ? 6 : isHovering ? 10 : 8,
-            height: isClicking ? 6 : isHovering ? 10 : 8,
+            width: isClicking ? 5 : isHovering ? 12 : 6,
+            height: isClicking ? 5 : isHovering ? 12 : 6,
             backgroundColor: isHovering ? "#FFC864" : "#FFFFFF",
+            boxShadow: isHovering 
+              ? "0 0 12px 2px rgba(255, 200, 100, 0.5)" 
+              : "0 0 6px 1px rgba(255, 255, 255, 0.3)",
           }}
-          transition={{ type: "spring", damping: 20, stiffness: 400 }}
+          transition={{ type: "spring", damping: 25, stiffness: 450 }}
         />
       </motion.div>
 

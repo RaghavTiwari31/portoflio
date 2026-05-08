@@ -66,13 +66,13 @@ function SpaceshipModel() {
   }, []);
 
   return (
-    <group ref={groupRef} rotation={[0.2, Math.PI, 0]} scale={0.6}>
+    <group ref={groupRef} rotation={[0.3, Math.PI * 0.85, 0.1]} scale={0.8}>
       {/* Main body */}
       <mesh geometry={shipGeometry} position={[0, 0, -0.2]}>
         <meshStandardMaterial
-          color="#2a2a3a"
-          metalness={0.8}
-          roughness={0.2}
+          color="#3a3a4a"
+          metalness={0.85}
+          roughness={0.15}
         />
       </mesh>
 
@@ -187,44 +187,52 @@ function Stars() {
 
 export function Spaceship3D() {
   const [scrollY, setScrollY] = useState(0);
+  const [maxScroll, setMaxScroll] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const updateMaxScroll = () => {
+      setMaxScroll(document.documentElement.scrollHeight - window.innerHeight);
+    };
+    
     const handleScroll = () => {
       setScrollY(window.scrollY);
     };
 
+    updateMaxScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("resize", updateMaxScroll);
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", updateMaxScroll);
+    };
   }, []);
 
-  // Calculate vertical position based on scroll
-  const maxScroll = typeof document !== "undefined" 
-    ? document.documentElement.scrollHeight - window.innerHeight 
-    : 1;
   const scrollProgress = maxScroll > 0 ? scrollY / maxScroll : 0;
   
   // Move from top to bottom of viewport as user scrolls
-  const topPosition = 15 + scrollProgress * 70; // 15% to 85% of viewport height
+  const topPosition = 12 + scrollProgress * 75; // 12% to 87% of viewport height
 
   return (
     <div
       ref={containerRef}
-      className="pointer-events-none fixed left-[5%] z-10 w-[120px] h-[150px] md:w-[150px] md:h-[180px] lg:w-[180px] lg:h-[200px] transition-all duration-300"
+      className="pointer-events-none fixed left-[3%] z-20 w-[100px] h-[140px] sm:w-[130px] sm:h-[170px] md:w-[160px] md:h-[200px] lg:w-[180px] lg:h-[220px]"
       style={{
         top: `${topPosition}%`,
         transform: "translateY(-50%)",
-        opacity: 0.7, // Reduced opacity to not impact text readability
+        opacity: 0.55,
       }}
     >
       <Canvas
-        camera={{ position: [0, 0, 4], fov: 50 }}
+        camera={{ position: [0, 0, 5], fov: 45 }}
         gl={{ antialias: true, alpha: true }}
         style={{ background: "transparent" }}
       >
-        <ambientLight intensity={0.4} />
-        <directionalLight position={[5, 5, 5]} intensity={0.8} color="#FFFFFF" />
-        <pointLight position={[0, -2, 2]} intensity={0.5} color="#FF6B00" />
+        <ambientLight intensity={0.6} />
+        <directionalLight position={[5, 5, 5]} intensity={1} color="#FFFFFF" />
+        <directionalLight position={[-3, 2, 4]} intensity={0.5} color="#64C8FF" />
+        <pointLight position={[0, -2, 2]} intensity={0.8} color="#FF6B00" />
         <SpaceshipModel />
         <Stars />
       </Canvas>
