@@ -11,25 +11,19 @@ interface RevealProps extends HTMLMotionProps<"div"> {
 }
 
 /**
- * Scroll reveal component.
+ * Scroll reveal component with space-themed smooth animations.
  *
  * Uses a combined approach:
- *  - Opacity fade-in for immediate softness.
- *  - Y-translate for perceived depth / lift-off.
- *  - Cubic-bezier ease that starts slow, accelerates mid-way, and
- *    gracefully overshoots — creating a subtle spring feel without
- *    needing a spring solver (which can cause layout jank on clip-path).
- *
- * The clip-path curtain wipe is intentionally removed because it clips
- * child overflow (e.g. glow shadows on skill tags) and feels mechanical
- * when multiple cards enter simultaneously. The translate + fade alone
- * reads as more organic.
+ *  - Opacity fade-in with blur for a cosmic emergence effect
+ *  - Y-translate for perceived depth / lift-off
+ *  - Cubic-bezier ease that creates a smooth, floating feel
+ *  - Filter blur that clears as the element arrives
  */
 export function Reveal({
   children,
   delay = 0,
   from = "up",
-  distance = 28,
+  distance = 40,
   ...props
 }: RevealProps) {
   const directionOffset = {
@@ -44,30 +38,34 @@ export function Reveal({
       opacity: 0,
       x: directionOffset.x,
       y: directionOffset.y,
-      // Slight scale-down so the element "arrives" rather than just sliding
-      scale: 0.97,
+      scale: 0.95,
+      filter: "blur(8px)",
     },
     show: {
       opacity: 1,
       x: 0,
       y: 0,
       scale: 1,
+      filter: "blur(0px)",
       transition: {
-        // Total animation time — slightly shorter than before for snappiness
-        duration: 0.75,
+        duration: 0.9,
         delay,
-        // Custom cubic-bezier: slow out of gate → accelerates → gentle arrival
-        ease: [0.16, 1, 0.3, 1],
-        // Opacity resolves a touch faster so content isn't "ghostly" for long
+        // Smooth, cosmic ease curve
+        ease: [0.25, 0.1, 0.25, 1],
         opacity: {
-          duration: 0.6,
+          duration: 0.7,
           delay,
           ease: "easeOut",
         },
         scale: {
-          duration: 0.75,
+          duration: 0.9,
           delay,
-          ease: [0.16, 1, 0.3, 1],
+          ease: [0.25, 0.1, 0.25, 1],
+        },
+        filter: {
+          duration: 0.6,
+          delay,
+          ease: "easeOut",
         },
       },
     },
@@ -77,10 +75,9 @@ export function Reveal({
     <motion.div
       initial="hidden"
       whileInView="show"
-      // Trigger as soon as 60 px of the element enters the viewport
-      viewport={{ once: true, margin: "-60px" }}
+      viewport={{ once: true, margin: "-80px" }}
       variants={variants}
-      style={{ willChange: "transform, opacity" }}
+      style={{ willChange: "transform, opacity, filter" }}
       {...props}
     >
       {children}
