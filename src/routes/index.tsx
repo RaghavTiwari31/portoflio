@@ -1,4 +1,4 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { Github, Linkedin, Mail, ArrowUpRight, MapPin, ExternalLink, Trophy, GraduationCap, Award, BookOpen, Briefcase, Sparkles, ChevronLeft, ChevronRight, Rocket } from "lucide-react";
 import { useState, useRef } from "react";
 
@@ -7,6 +7,7 @@ import { SolarSystem3D } from "@/components/SolarSystem3D";
 import { MouseCursor } from "@/components/MouseCursor";
 import { Spaceship3D } from "@/components/Spaceship3D";
 import { Reveal } from "@/components/Reveal";
+import { Loader } from "@/components/Loader";
 
 const EMAIL = "raghav31.tiwari@gmail.com";
 const GITHUB = "https://github.com/RaghavTiwari31";
@@ -60,13 +61,24 @@ const ACHIEVEMENTS = [
 ];
 
 export default function Portfolio() {
+  const [isLoaded, setIsLoaded] = useState(false);
+
   return (
-    <div className="relative min-h-screen text-foreground">
-      <SpaceBackground />
-      <MouseCursor />
-      <Spaceship3D />
-      <Nav />
-      <main className="mx-auto max-w-6xl px-6 pb-24">
+    <>
+      <AnimatePresence>
+        {!isLoaded && <Loader onComplete={() => setIsLoaded(true)} />}
+      </AnimatePresence>
+      <motion.div 
+        className="relative min-h-screen text-foreground"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isLoaded ? 1 : 0 }}
+        transition={{ duration: 1.5, ease: "easeOut" }}
+      >
+        <SpaceBackground />
+        <MouseCursor />
+        {isLoaded && <Spaceship3D />}
+        <Nav />
+        <main className="mx-auto max-w-6xl px-6 pb-24">
         <Hero />
         <Summary />
         <Skills />
@@ -78,7 +90,8 @@ export default function Portfolio() {
         <Certifications />
       </main>
       <Footer />
-    </div>
+      </motion.div>
+    </>
   );
 }
 
