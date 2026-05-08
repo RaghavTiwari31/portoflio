@@ -146,7 +146,7 @@ function SolarSystemScene() {
 
 export function SolarSystem3D() {
   return (
-    <div className="absolute right-[-5%] top-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[480px] md:h-[480px] lg:w-[520px] lg:h-[520px] xl:w-[580px] xl:h-[580px] opacity-90">
+    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[380px] h-[380px] md:w-[450px] md:h-[450px] lg:w-[500px] lg:h-[500px] xl:w-[540px] xl:h-[540px] opacity-90">
       <Canvas
         camera={{ position: [0, 8, 12], fov: 45 }}
         gl={{ antialias: true, alpha: true }}
