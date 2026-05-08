@@ -24,13 +24,14 @@ const NAV = [
 ];
 
 const SKILLS: { title: string; items: string[]; accent: string }[] = [
-  { title: "Programming Languages", items: ["Python", "C", "C++", "SQL", "JavaScript"], accent: "gold" },
+  { title: "Programming Languages", items: ["Python", "C", "C++", "SQL", "JavaScript", "HTML", "CSS"], accent: "gold" },
   { title: "Frameworks & Libraries", items: ["Streamlit", "Dash", "FastAPI"], accent: "purple" },
-  { title: "Technologies & Concepts", items: ["Prompt Engineering", "RAG", "LLM Pipelines", "Data Ingestion", "Structured Outputs", "Few-shot Design"], accent: "cyan" },
-  { title: "Databases & ORMs", items: ["PostgreSQL", "MySQL", "VectorDB"], accent: "gold" },
-  { title: "Tools", items: ["VS Code", "IntelliJ IDEA", "Microsoft Office Suite"], accent: "purple" },
-  { title: "Methodologies & Professional Skills", items: ["Agile", "SDLC", "Research", "Remote Collaboration", "Effective Communication", "Creative Problem Solving", "Trend Awareness"], accent: "cyan" },
-  { title: "Design & Visual Communication", items: ["Graphic Design", "Colour Theory", "Typography", "Layout Composition", "Branding", "Canva", "Photoshop"], accent: "gold" },
+  { title: "Technologies & Concepts", items: ["Prompt Engineering", "RAG", "LLM Pipelines", "Data Ingestion", "Structured Outputs", "Few-shot Design", "Generative AI", "AI Agents", "Data Analytics", "Embeddings"], accent: "cyan" },
+  { title: "Backend", items: ["REST APIs", "API Integration", "Async Processing", "JSON"], accent: "gold" },
+  { title: "Databases & ORMs", items: ["PostgreSQL", "MySQL", "VectorDB"], accent: "purple" },
+  { title: "Tools", items: ["VS Code", "IntelliJ IDEA", "Microsoft Office Suite", "Antigravity", "Cursor", "Codex", "Vercel"], accent: "cyan" },
+  { title: "Methodologies & Professional Skills", items: ["Prompt Engineering", "Agile", "SDLC", "Research", "Remote Collaboration", "Effective Communication", "Creative Problem Solving", "Trend Awareness", "Analytical Thinking"], accent: "gold" },
+  { title: "Design & Visual Communication", items: ["Graphic Design", "Colour Theory", "Typography", "Layout Composition", "Branding", "Canva", "Photoshop"], accent: "purple" },
 ];
 
 const accentMap: Record<string, string> = {
