@@ -27,62 +27,29 @@ const PLANETS: PlanetData[] = [
 
 function Sun() {
   const meshRef = useRef<THREE.Mesh>(null);
-  const outerGlowRef = useRef<THREE.Mesh>(null);
-  const midGlowRef = useRef<THREE.Mesh>(null);
-  const coronaRef = useRef<THREE.Mesh>(null);
+  const glowRef = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
-    const time = state.clock.elapsedTime;
-    
     if (meshRef.current) {
       meshRef.current.rotation.y += 0.003;
     }
-    if (outerGlowRef.current) {
-      const scale = 1.4 + Math.sin(time * 0.8) * 0.08;
-      outerGlowRef.current.scale.setScalar(scale);
-    }
-    if (midGlowRef.current) {
-      const scale = 1.2 + Math.sin(time * 1.2 + 1) * 0.05;
-      midGlowRef.current.scale.setScalar(scale);
-    }
-    if (coronaRef.current) {
-      coronaRef.current.rotation.z += 0.001;
-      const scale = 1.6 + Math.sin(time * 0.5) * 0.1;
-      coronaRef.current.scale.setScalar(scale);
+    if (glowRef.current) {
+      const scale = 1.15 + Math.sin(state.clock.elapsedTime * 0.6) * 0.03;
+      glowRef.current.scale.setScalar(scale);
     }
   });
 
   return (
     <group>
-      {/* Outer corona glow - orange tint */}
-      <mesh ref={coronaRef}>
-        <sphereGeometry args={[0.8, 32, 32]} />
-        <meshBasicMaterial color="#FF6B00" transparent opacity={0.08} />
+      {/* Subtle outer glow */}
+      <mesh ref={glowRef}>
+        <sphereGeometry args={[0.58, 32, 32]} />
+        <meshBasicMaterial color="#FFAA00" transparent opacity={0.15} />
       </mesh>
-      {/* Outer glow - warm orange */}
-      <mesh ref={outerGlowRef}>
-        <sphereGeometry args={[0.65, 32, 32]} />
-        <meshBasicMaterial color="#FF8C00" transparent opacity={0.2} />
-      </mesh>
-      {/* Mid glow - yellow-orange */}
-      <mesh ref={midGlowRef}>
-        <sphereGeometry args={[0.55, 32, 32]} />
-        <meshBasicMaterial color="#FFB347" transparent opacity={0.35} />
-      </mesh>
-      {/* Sun surface - bright yellow */}
+      {/* Bright sun surface */}
       <mesh ref={meshRef}>
-        <sphereGeometry args={[0.48, 32, 32]} />
-        <meshBasicMaterial color="#FFD93D" />
-      </mesh>
-      {/* Inner hot core - white center */}
-      <mesh>
-        <sphereGeometry args={[0.38, 32, 32]} />
-        <meshBasicMaterial color="#FFFEF0" />
-      </mesh>
-      {/* Bright white hotspot */}
-      <mesh position={[0.1, 0.1, 0.35]}>
-        <sphereGeometry args={[0.12, 16, 16]} />
-        <meshBasicMaterial color="#FFFFFF" transparent opacity={0.7} />
+        <sphereGeometry args={[0.5, 32, 32]} />
+        <meshBasicMaterial color="#FFE066" />
       </mesh>
     </group>
   );
