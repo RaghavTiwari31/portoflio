@@ -3,7 +3,9 @@ import { Github, Linkedin, Mail, ArrowUpRight, MapPin, ExternalLink, Trophy, Gra
 import { useState, useRef } from "react";
 
 import { SpaceBackground } from "@/components/SpaceBackground";
-import { SolarSystem } from "@/components/SolarSystem";
+import { SolarSystem3D } from "@/components/SolarSystem3D";
+import { MouseCursor } from "@/components/MouseCursor";
+import { Spaceship3D } from "@/components/Spaceship3D";
 import { Reveal } from "@/components/Reveal";
 
 const EMAIL = "raghav31.tiwari@gmail.com";
@@ -61,6 +63,8 @@ export default function Portfolio() {
   return (
     <div className="relative min-h-screen text-foreground">
       <SpaceBackground />
+      <MouseCursor />
+      <Spaceship3D />
       <Nav />
       <main className="mx-auto max-w-6xl px-6 pb-24">
         <Hero />
@@ -133,8 +137,8 @@ function Hero() {
       id="top" 
       className="relative flex min-h-screen flex-col justify-center pt-24 overflow-hidden"
     >
-      {/* Solar System positioned on the right */}
-      <SolarSystem />
+      {/* 3D Solar System positioned on the right */}
+      <SolarSystem3D />
       
       <motion.div style={{ y, opacity }} className="relative z-10">
         <Reveal>

@@ -73,6 +73,10 @@
 @layer base {
   * { 
     border-color: var(--color-border); 
+    cursor: none;
+  }
+  a, button, [role="button"], input, textarea, select {
+    cursor: none;
   }
   html { 
     scroll-behavior: smooth;
@@ -85,6 +89,12 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+  }
+  /* Show default cursor on touch devices */
+  @media (hover: none) and (pointer: coarse) {
+    *, a, button, [role="button"], input, textarea, select {
+      cursor: auto;
+    }
   }
   ::-webkit-scrollbar {
     width: 8px;
