@@ -31,9 +31,9 @@ const SKILLS: { title: string; items: string[]; accent: string }[] = [
 ];
 
 const accentMap: Record<string, string> = {
-  gold: "text-[var(--space-gold)] border-[var(--space-gold)]/30 hover:shadow-[0_0_25px_rgba(255,200,100,0.3)] hover:border-[var(--space-gold)]/60",
-  purple: "text-[var(--space-purple)] border-[var(--space-purple)]/30 hover:shadow-[0_0_25px_rgba(150,100,255,0.3)] hover:border-[var(--space-purple)]/60",
-  cyan: "text-[var(--space-cyan)] border-[var(--space-cyan)]/30 hover:shadow-[0_0_25px_rgba(100,200,255,0.3)] hover:border-[var(--space-cyan)]/60",
+  gold: "text-[var(--space-gold)] border-[var(--space-gold)]/30 hover:border-[var(--space-gold)]/70 hover:bg-[var(--space-gold)]/10",
+  purple: "text-[var(--space-purple)] border-[var(--space-purple)]/30 hover:border-[var(--space-purple)]/70 hover:bg-[var(--space-purple)]/10",
+  cyan: "text-[var(--space-cyan)] border-[var(--space-cyan)]/30 hover:border-[var(--space-cyan)]/70 hover:bg-[var(--space-cyan)]/10",
 };
 
 const ACHIEVEMENTS = [
@@ -108,7 +108,7 @@ function Nav() {
         </nav>
         <a 
           href={`mailto:${EMAIL}`} 
-          className="relative rounded-lg bg-gradient-to-r from-[var(--space-gold)] to-[var(--space-orange)] px-4 py-1.5 text-xs font-semibold text-background transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(255,200,100,0.4)]"
+          className="relative rounded-lg bg-gradient-to-r from-[var(--space-gold)] to-[var(--space-orange)] px-4 py-1.5 text-xs font-semibold text-background transition-all hover:scale-105 hover:brightness-110"
         >
           Contact
         </a>
@@ -134,9 +134,7 @@ function Hero() {
       className="relative flex min-h-screen flex-col justify-center pt-24 overflow-hidden"
     >
       {/* Solar System positioned on the right */}
-      <div className="hidden lg:block">
-        <SolarSystem />
-      </div>
+      <SolarSystem />
       
       <motion.div style={{ y, opacity }} className="relative z-10">
         <Reveal>
@@ -170,9 +168,9 @@ function Hero() {
         <Reveal delay={0.2}>
           <p className="mt-6 max-w-xl text-lg text-muted-foreground md:text-xl leading-relaxed">
             Software Engineering Student — building{" "}
-            <span className="text-[var(--space-cyan)] font-medium">AI-powered systems</span>,{" "}
-            <span className="text-[var(--space-purple)] font-medium">RAG pipelines</span> and{" "}
-            <span className="text-[var(--space-gold)] font-medium">data-driven applications</span>.
+            <span className="text-highlight-cyan">AI-powered systems</span>,{" "}
+            <span className="text-highlight-purple">RAG pipelines</span> and{" "}
+            <span className="text-highlight-gold">data-driven applications</span>.
           </p>
         </Reveal>
         
@@ -201,10 +199,10 @@ function Hero() {
 }
 
 function HeroLink({ href, icon, label, accent }: { href: string; icon: React.ReactNode; label: string; accent: string }) {
-  const glowMap: Record<string, string> = {
-    cyan: "hover:shadow-[0_0_40px_rgba(100,200,255,0.4)] hover:border-[var(--space-cyan)]",
-    purple: "hover:shadow-[0_0_40px_rgba(150,100,255,0.4)] hover:border-[var(--space-purple)]",
-    gold: "hover:shadow-[0_0_40px_rgba(255,200,100,0.4)] hover:border-[var(--space-gold)]",
+  const borderMap: Record<string, string> = {
+    cyan: "hover:border-[var(--space-cyan)]/50",
+    purple: "hover:border-[var(--space-purple)]/50",
+    gold: "hover:border-[var(--space-gold)]/50",
   };
   const textMap: Record<string, string> = {
     cyan: "group-hover:text-[var(--space-cyan)]",
@@ -213,12 +211,12 @@ function HeroLink({ href, icon, label, accent }: { href: string; icon: React.Rea
   };
   return (
     <motion.a
-      whileHover={{ scale: 1.05, y: -3 }}
+      whileHover={{ scale: 1.03, y: -2 }}
       whileTap={{ scale: 0.97 }}
       href={href}
       target={href.startsWith("http") ? "_blank" : undefined}
       rel="noreferrer"
-      className={`glass group inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium transition-all duration-300 ${glowMap[accent]}`}
+      className={`glass group inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium transition-all duration-300 ${borderMap[accent]}`}
     >
       <span className={`transition-colors ${textMap[accent]}`}>{icon}</span>
       <span>{label}</span>
@@ -258,10 +256,10 @@ function Summary() {
         >
           <p className="text-lg leading-relaxed text-muted-foreground md:text-xl">
             B.Tech Computer Science student specializing in building{" "}
-            <span className="text-[var(--space-cyan)] font-medium text-glow-cyan">AI-powered systems</span> and{" "}
-            <span className="text-[var(--space-purple)] font-medium text-glow-purple">data-driven applications</span>. Experienced in developing
+            <span className="text-highlight-cyan">AI-powered systems</span> and{" "}
+            <span className="text-highlight-purple">data-driven applications</span>. Experienced in developing
             RAG pipelines, backend APIs, and automation workflows using Python, FastAPI, and PostgreSQL. Strong focus on{" "}
-            <span className="text-[var(--space-gold)] font-medium text-glow-gold">LLM-based systems, prompt engineering, and scalable AI pipelines</span>,
+            <span className="text-highlight-gold">LLM-based systems, prompt engineering, and scalable AI pipelines</span>,
             with applied research experience and strong design thinking for building intuitive, user-centric solutions.
           </p>
         </motion.div>
@@ -403,9 +401,9 @@ function Projects() {
     },
   ];
 
-  const accentColors: Record<string, { text: string; bg: string; glow: string }> = {
-    cyan: { text: "text-[var(--space-cyan)]", bg: "bg-[var(--space-cyan)]", glow: "hover:shadow-[0_0_50px_rgba(100,200,255,0.2)]" },
-    purple: { text: "text-[var(--space-purple)]", bg: "bg-[var(--space-purple)]", glow: "hover:shadow-[0_0_50px_rgba(150,100,255,0.2)]" },
+  const accentColors: Record<string, { text: string; bg: string }> = {
+    cyan: { text: "text-[var(--space-cyan)]", bg: "bg-[var(--space-cyan)]" },
+    purple: { text: "text-[var(--space-purple)]", bg: "bg-[var(--space-purple)]" },
   };
 
   return (
@@ -415,9 +413,9 @@ function Projects() {
         {projects.map((p, i) => (
           <Reveal key={p.name} delay={i * 0.1} className={p.span}>
             <motion.article
-              whileHover={{ y: -8, scale: 1.01 }}
+              whileHover={{ y: -6, scale: 1.01 }}
               transition={{ type: "spring", stiffness: 200 }}
-              className={`glass group relative h-full overflow-hidden rounded-2xl p-7 transition-all hover:border-white/15 md:p-8 ${accentColors[p.accent].glow}`}
+              className="glass group relative h-full overflow-hidden rounded-2xl p-7 transition-all hover:border-white/15 md:p-8"
             >
               <div className="relative">
                 <div className="flex flex-wrap items-start justify-between gap-3">

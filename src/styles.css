@@ -130,7 +130,6 @@
   }
   .text-accent { 
     color: var(--space-gold);
-    text-shadow: 0 0 30px rgba(255, 200, 100, 0.3);
   }
   .grid-bg {
     background-image:
@@ -138,23 +137,78 @@
       linear-gradient(90deg, oklch(1 0 0 / 0.02) 1px, transparent 1px);
     background-size: 60px 60px;
   }
-  .space-glow-cyan {
-    box-shadow: 0 0 40px rgba(100, 200, 255, 0.15);
+
+  /* Hover highlight text - underline appears on hover */
+  .text-highlight-cyan {
+    color: var(--space-cyan);
+    font-weight: 500;
+    position: relative;
+    transition: color 0.2s ease;
+    cursor: default;
   }
-  .space-glow-gold {
-    box-shadow: 0 0 40px rgba(255, 200, 100, 0.15);
+  .text-highlight-cyan::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 0;
+    height: 2px;
+    background: var(--space-cyan);
+    transition: width 0.3s ease;
   }
-  .space-glow-purple {
-    box-shadow: 0 0 40px rgba(150, 100, 255, 0.15);
+  .text-highlight-cyan:hover::after {
+    width: 100%;
   }
-  .text-glow-cyan {
-    text-shadow: 0 0 20px rgba(100, 200, 255, 0.5);
+  .text-highlight-cyan:hover {
+    color: oklch(0.9 0.15 200);
   }
-  .text-glow-gold {
-    text-shadow: 0 0 20px rgba(255, 200, 100, 0.5);
+  
+  .text-highlight-gold {
+    color: var(--space-gold);
+    font-weight: 500;
+    position: relative;
+    transition: color 0.2s ease;
+    cursor: default;
   }
-  .text-glow-purple {
-    text-shadow: 0 0 20px rgba(150, 100, 255, 0.5);
+  .text-highlight-gold::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 0;
+    height: 2px;
+    background: var(--space-gold);
+    transition: width 0.3s ease;
+  }
+  .text-highlight-gold:hover::after {
+    width: 100%;
+  }
+  .text-highlight-gold:hover {
+    color: oklch(0.9 0.15 80);
+  }
+  
+  .text-highlight-purple {
+    color: var(--space-purple);
+    font-weight: 500;
+    position: relative;
+    transition: color 0.2s ease;
+    cursor: default;
+  }
+  .text-highlight-purple::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 0;
+    height: 2px;
+    background: var(--space-purple);
+    transition: width 0.3s ease;
+  }
+  .text-highlight-purple:hover::after {
+    width: 100%;
+  }
+  .text-highlight-purple:hover {
+    color: oklch(0.75 0.2 280);
   }
 }
 
@@ -214,13 +268,13 @@
 /* Hover effects */
 .hover-lift {
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
-              box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+              box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.3s ease;
 }
 .hover-lift:hover {
-  transform: translateY(-8px);
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.4),
-    0 0 60px rgba(255, 200, 100, 0.1);
+  transform: translateY(-6px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 /* Section dividers */

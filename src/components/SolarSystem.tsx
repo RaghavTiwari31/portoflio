@@ -152,25 +152,21 @@ export function SolarSystem() {
         ctx.stroke();
       }
 
-      // Draw Sun with pulsing glow
+      // Draw Sun (simple, no excessive glow)
       sunPhase += 0.02;
-      const sunGlowIntensity = 0.4 + Math.sin(sunPhase) * 0.1;
-      const sunSize = 25 + Math.sin(sunPhase * 0.5) * 2;
+      const sunSize = 28 + Math.sin(sunPhase * 0.5) * 2;
 
-      // Outer glow layers
-      for (let i = 4; i >= 1; i--) {
-        const glowGrad = ctx.createRadialGradient(
-          centerX, centerY, 0,
-          centerX, centerY, sunSize * (1 + i * 0.8)
-        );
-        glowGrad.addColorStop(0, `rgba(255, 200, 100, ${sunGlowIntensity * 0.15 / i})`);
-        glowGrad.addColorStop(0.5, `rgba(255, 150, 50, ${sunGlowIntensity * 0.08 / i})`);
-        glowGrad.addColorStop(1, "rgba(255, 100, 0, 0)");
-        ctx.fillStyle = glowGrad;
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, sunSize * (1 + i * 0.8), 0, Math.PI * 2);
-        ctx.fill();
-      }
+      // Single subtle outer glow
+      const glowGrad = ctx.createRadialGradient(
+        centerX, centerY, sunSize * 0.8,
+        centerX, centerY, sunSize * 2
+      );
+      glowGrad.addColorStop(0, "rgba(255, 200, 100, 0.2)");
+      glowGrad.addColorStop(1, "rgba(255, 150, 50, 0)");
+      ctx.fillStyle = glowGrad;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, sunSize * 2, 0, Math.PI * 2);
+      ctx.fill();
 
       // Sun core
       const sunGrad = ctx.createRadialGradient(
@@ -194,32 +190,23 @@ export function SolarSystem() {
         const x = centerX + Math.cos(planet.angle) * orbitR;
         const y = centerY + Math.sin(planet.angle) * orbitR;
 
-        // Planet glow
-        const planetGlow = ctx.createRadialGradient(x, y, 0, x, y, planet.size * 2.5);
-        planetGlow.addColorStop(0, `rgba(${planet.glowColor}, 0.3)`);
-        planetGlow.addColorStop(1, `rgba(${planet.glowColor}, 0)`);
-        ctx.fillStyle = planetGlow;
-        ctx.beginPath();
-        ctx.arc(x, y, planet.size * 2.5, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Saturn's ring
+        // Saturn's ring (before planet body)
         if (planet.hasRing && planet.ringColor) {
-          ctx.strokeStyle = `rgba(${planet.ringColor}, 0.5)`;
-          ctx.lineWidth = 3;
+          ctx.strokeStyle = `rgba(${planet.ringColor}, 0.6)`;
+          ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.ellipse(x, y, planet.size * 2.2, planet.size * 0.6, Math.PI / 6, 0, Math.PI * 2);
+          ctx.ellipse(x, y, planet.size * 2.2, planet.size * 0.5, Math.PI / 6, 0, Math.PI * 2);
           ctx.stroke();
         }
 
-        // Planet body with gradient
+        // Planet body with gradient (no outer glow)
         const planetGrad = ctx.createRadialGradient(
           x - planet.size * 0.3, y - planet.size * 0.3, 0,
           x, y, planet.size
         );
         planetGrad.addColorStop(0, "#FFFFFF");
-        planetGrad.addColorStop(0.2, planet.color);
-        planetGrad.addColorStop(1, shadeColor(planet.color, -30));
+        planetGrad.addColorStop(0.3, planet.color);
+        planetGrad.addColorStop(1, shadeColor(planet.color, -40));
         ctx.fillStyle = planetGrad;
         ctx.beginPath();
         ctx.arc(x, y, planet.size, 0, Math.PI * 2);
@@ -269,7 +256,7 @@ export function SolarSystem() {
   return (
     <div 
       ref={containerRef}
-      className="absolute right-0 top-1/2 -translate-y-1/2 w-[500px] h-[500px] lg:w-[600px] lg:h-[600px] xl:w-[700px] xl:h-[700px] opacity-70 hover:opacity-90 transition-opacity duration-500"
+      className="absolute right-[-10%] top-1/2 -translate-y-1/2 w-[450px] h-[450px] md:w-[500px] md:h-[500px] lg:w-[550px] lg:h-[550px] xl:w-[600px] xl:h-[600px] opacity-90 transition-opacity duration-500"
     >
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
     </div>
