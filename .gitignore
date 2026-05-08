@@ -13,6 +13,12 @@ dist-ssr
 
 # Local env files
 *.local
+.env
+.env.*
+!.env.example
+
+# Vercel
+.vercel
 
 # Stale tool caches (should never be committed)
 .wrangler/
@@ -27,3 +33,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Original proofs folder (copied to public/proofs)
+/proofs

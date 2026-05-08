@@ -27,7 +27,7 @@ const generatePoints = () => {
 
   // Realistic Starfield for Warp Effect
   const starColors = ["#ffffff", "#f0f8ff", "#fffacd", "#add8e6", "#ffd700"];
-  for (let i = 0; i < 350; i++) { // Increased count for realism
+  for (let i = 0; i < 150; i++) { // Decreased count for realism and performance
     const angle = Math.random() * Math.PI * 2;
     const dist = Math.random() * 250 + 10;
     pts.push({
@@ -99,6 +99,7 @@ export function Loader({ onComplete }: { onComplete: () => void }) {
             scale: { duration: phase >= 2 ? 3 : 0, ease: "easeIn" },
             opacity: { duration: phase === 3 ? 1 : 0, ease: "easeOut" }
           }}
+          style={{ willChange: "transform, opacity" }}
         >
           <svg viewBox="0 0 400 200" className="w-full h-full overflow-visible">
             <defs>
@@ -147,7 +148,7 @@ export function Loader({ onComplete }: { onComplete: () => void }) {
                       opacity: phase === 3 ? 0 : (phase >= 2 ? 0.8 : (phase >= 1 ? 0.3 : 0)),
                     }}
                     transition={{ 
-                      opacity: { duration: phase === 3 ? 1 : 2 },
+                      opacity: { duration: phase === 3 ? 1 : 2.5, ease: "easeOut" },
                       default: { 
                         duration: phase >= 2 ? 1.5 : 2.5, 
                         ease: phase >= 2 ? "easeIn" : [0.16, 1, 0.3, 1] 
@@ -187,11 +188,14 @@ export function Loader({ onComplete }: { onComplete: () => void }) {
           className="absolute z-20 text-[#e2f1ff] tracking-[0.5em] font-light text-sm sm:text-lg md:text-xl uppercase text-center w-full"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ 
-            opacity: phase === 2 ? 1 : 0,
-            scale: phase === 2 ? 1 : 1.1
+            opacity: phase === 3 ? 0 : (phase >= 2 ? 1 : 0),
+            scale: phase >= 2 ? 1 : 0.9
           }}
-          transition={{ duration: 2.5, ease: "easeOut" }}
-          style={{ textShadow: "0 0 20px rgba(100, 200, 255, 0.5)" }}
+          transition={{ 
+            opacity: { duration: phase === 3 ? 1 : 2.5, ease: "easeOut" },
+            scale: { duration: 2.5, ease: "easeOut" }
+          }}
+          style={{ textShadow: "0 0 20px rgba(100, 200, 255, 0.5)", willChange: "transform, opacity" }}
         >
           Entering Raghav's Universe
         </motion.div>

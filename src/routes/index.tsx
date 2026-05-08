@@ -25,13 +25,13 @@ const NAV = [
 
 const SKILLS: { title: string; items: string[]; accent: string }[] = [
   { title: "Programming Languages", items: ["Python", "C", "C++", "SQL", "JavaScript", "HTML", "CSS"], accent: "gold" },
-  { title: "Frameworks & Libraries", items: ["Streamlit", "Dash", "FastAPI"], accent: "purple" },
-  { title: "Technologies & Concepts", items: ["Prompt Engineering", "RAG", "LLM Pipelines", "Data Ingestion", "Structured Outputs", "Few-shot Design", "Generative AI", "AI Agents", "Data Analytics", "Embeddings"], accent: "cyan" },
-  { title: "Backend", items: ["REST APIs", "API Integration", "Async Processing", "JSON"], accent: "gold" },
-  { title: "Databases & ORMs", items: ["PostgreSQL", "MySQL", "VectorDB"], accent: "purple" },
-  { title: "Tools", items: ["VS Code", "IntelliJ IDEA", "Microsoft Office Suite", "Antigravity", "Cursor", "Codex", "Vercel"], accent: "cyan" },
-  { title: "Methodologies & Professional Skills", items: ["Prompt Engineering", "Agile", "SDLC", "Research", "Remote Collaboration", "Effective Communication", "Creative Problem Solving", "Trend Awareness", "Analytical Thinking"], accent: "gold" },
-  { title: "Design & Visual Communication", items: ["Graphic Design", "Colour Theory", "Typography", "Layout Composition", "Branding", "Canva", "Photoshop"], accent: "purple" },
+  { title: "Frameworks & Libraries", items: ["Streamlit", "Dash", "React"], accent: "purple" },
+  { title: "Technologies & Concepts", items: ["Prompt Engineering", "RAG", "LLM Pipelines", "Data Ingestion Pipelines", "Generative AI", "AI Agents", "Data Analytics"], accent: "cyan" },
+  { title: "Backend", items: ["REST APIs", "API Integration", "Async Processing", "JSON", "FastAPI"], accent: "gold" },
+  { title: "Databases", items: ["PostgreSQL", "MySQL", "VectorDB"], accent: "purple" },
+  { title: "Tools", items: ["VS Code", "IntelliJ IDEA", "Vercel", "Git", "GitHub", "Antigravity"], accent: "cyan" },
+  { title: "Methodologies & Professional Skills", items: ["Agile", "SDLC", "Research", "Thinking"], accent: "gold" },
+  { title: "Design & Visual Communication", items: ["Canva", "Photoshop", "Typography", "Branding", "Layout Design"], accent: "purple" },
 ];
 
 const accentMap: Record<string, string> = {
@@ -193,10 +193,27 @@ function Hero() {
         </Reveal>
         
         <Reveal delay={0.3}>
-          <div className="mt-10 flex flex-wrap gap-3">
-            <HeroLink href={GITHUB} icon={<Github className="h-4 w-4" />} label="Github" accent="cyan" />
-            <HeroLink href={LINKEDIN} icon={<Linkedin className="h-4 w-4" />} label="LinkedIn" accent="purple" />
-            <HeroLink href={`mailto:${EMAIL}`} icon={<Mail className="h-4 w-4" />} label="Email" accent="gold" />
+          <div className="mt-10 flex flex-col items-start gap-4">
+            <div className="flex flex-wrap gap-3">
+              <HeroLink href={GITHUB} icon={<Github className="h-4 w-4" />} label="Github" accent="cyan" />
+              <HeroLink href={LINKEDIN} icon={<Linkedin className="h-4 w-4" />} label="LinkedIn" accent="purple" />
+              <HeroLink href={`mailto:${EMAIL}`} icon={<Mail className="h-4 w-4" />} label="Email" accent="gold" />
+            </div>
+            <motion.a
+              whileHover={{ scale: 1.03, y: -2, boxShadow: "0 0 20px rgba(255, 215, 0, 0.3)" }}
+              whileTap={{ scale: 0.97 }}
+              href="/proofs/Final Resume.pdf"
+              target="_blank"
+              rel="noreferrer"
+              className="group relative inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--space-gold)] to-[var(--space-orange)] px-6 py-3 text-sm font-bold text-background transition-all overflow-hidden shadow-lg w-full sm:w-auto justify-center"
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                <Briefcase className="h-4 w-4" />
+                View Resume
+                <ArrowUpRight className="h-4 w-4 opacity-70 transition-all group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </span>
+              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+            </motion.a>
           </div>
         </Reveal>
         
@@ -489,11 +506,26 @@ function Projects() {
 
 function Achievements() {
   const [idx, setIdx] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    setMousePos({ x: e.clientX, y: e.clientY });
+  };
+
   const accentColorMap: Record<string, string> = {
     gold: "text-[var(--space-gold)]",
     purple: "text-[var(--space-purple)]",
     cyan: "text-[var(--space-cyan)]",
   };
+
+  const proofMap: Record<number, string> = {
+    0: "/proofs/iiit delhi proof.jpeg",
+    1: "/proofs/RIFT26-Certificate-Raghav-Tiwari.jpg",
+    2: "",
+  };
+
+  const currentProof = proofMap[idx];
 
   return (
     <section className="mt-32">
@@ -503,6 +535,9 @@ function Achievements() {
           className="glass relative rounded-2xl p-8 md:p-10 hover-lift"
           whileHover={{ scale: 1.01 }}
           transition={{ type: "spring", stiffness: 200 }}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          onMouseMove={handleMouseMove}
         >
           <Trophy className={`absolute right-8 top-8 h-8 w-8 ${accentColorMap[ACHIEVEMENTS[idx].accent]}`} />
           <motion.div
@@ -553,6 +588,25 @@ function Achievements() {
           </div>
         </motion.div>
       </Reveal>
+      
+      <AnimatePresence>
+        {isHovered && currentProof && (
+          <motion.img
+            initial={{ opacity: 0, scale: 0.8, x: "-50%" }}
+            animate={{ opacity: 1, scale: 1, x: "-50%" }}
+            exit={{ opacity: 0, scale: 0.8, x: "-50%" }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            src={currentProof}
+            alt="Achievement Proof"
+            className="fixed z-[100] rounded-xl shadow-2xl object-cover pointer-events-none border border-white/10"
+            style={{
+              width: "400px",
+              left: mousePos.x,
+              top: mousePos.y + 20,
+            }}
+          />
+        )}
+      </AnimatePresence>
     </section>
   );
 }
