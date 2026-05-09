@@ -2,12 +2,19 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
 const generatePoints = () => {
-  const pts: {x: number, y: number, isBg?: boolean, isWarp?: boolean, angle?: number, dist?: number, color?: string}[] = [];
+  const pts: {x: number, y: number, dispX: number, dispY: number, isBg?: boolean, color?: string}[] = [];
   const addPt = (x: number, y: number) => {
     // Jitter for organic star look
     const jx = x + (Math.random() - 0.5) * 4;
     const jy = y + (Math.random() - 0.5) * 4;
-    pts.push({ x: jx, y: jy, color: "#e2f1ff" });
+    
+    // Dispersion target
+    const angle = Math.random() * Math.PI * 2;
+    const dist = Math.random() * 300 + 50; 
+    const dispX = 200 + Math.cos(angle) * dist;
+    const dispY = 100 + Math.sin(angle) * dist;
+
+    pts.push({ x: jx, y: jy, dispX, dispY, color: "#e2f1ff" });
   };
   
   // R
@@ -25,18 +32,20 @@ const generatePoints = () => {
     addPt(300 - i * (40/120), 40 + i); // Right diagonal
   }
 
-  // Realistic Starfield for Warp Effect
+  // Realistic Starfield for Background
   const starColors = ["#ffffff", "#f0f8ff", "#fffacd", "#add8e6", "#ffd700"];
   for (let i = 0; i < 150; i++) { // Decreased count for realism and performance
     const angle = Math.random() * Math.PI * 2;
     const dist = Math.random() * 250 + 10;
+    
+    const dispDist = dist + Math.random() * 150;
+
     pts.push({
       x: 200 + Math.cos(angle) * dist,
       y: 100 + Math.sin(angle) * dist,
+      dispX: 200 + Math.cos(angle) * dispDist, // disperse radially
+      dispY: 100 + Math.sin(angle) * dispDist,
       isBg: true,
-      isWarp: true,
-      angle,
-      dist,
       color: starColors[Math.floor(Math.random() * starColors.length)]
     });
   }
@@ -53,16 +62,15 @@ export function Loader({ onComplete }: { onComplete: () => void }) {
     document.body.style.overflow = 'hidden';
 
     // Sequence Timings
-    const t1 = setTimeout(() => setPhase(1), 1500); // 1.5s: Form RV
-    const t2 = setTimeout(() => setPhase(2), 4500); // 4.5s: Warp effect starts
-    const t3 = setTimeout(() => setPhase(3), 7000); // 7.0s: Text fade out & Warp fade out
-    const t4 = setTimeout(() => {
+    const t1 = setTimeout(() => setPhase(1), 1500); // 1.5s: Form RV & Starfield
+    const t2 = setTimeout(() => setPhase(2), 5000); // 5.0s: Wait 1s after form (2.5s) then Fade out
+    const t3 = setTimeout(() => {
       document.body.style.overflow = '';
       onComplete();
-    }, 8500); // 8.5s: Complete and unmount
+    }, 6500); // 6.5s: Complete and unmount
 
     return () => { 
-      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4);
+      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3);
       document.body.style.overflow = '';
     };
   }, [onComplete]);
@@ -79,32 +87,26 @@ export function Loader({ onComplete }: { onComplete: () => void }) {
            className="absolute inset-0 z-0"
            initial={{ opacity: 0 }}
            animate={{ 
-             opacity: phase >= 2 && phase < 3 ? 0.6 : 0 
+             opacity: phase === 1 ? 0.6 : 0 
            }}
-           transition={{ duration: phase === 3 ? 1.5 : 3, ease: "easeOut" }}
+           transition={{ duration: 3, ease: "easeOut" }}
            style={{
              backgroundImage: 'radial-gradient(circle at center, rgba(80, 180, 255, 0.2) 0%, transparent 60%)'
            }}
         />
 
-        {/* Warp Stars & RV Constellation */}
+        {/* RV Constellation */}
         <motion.div
           className="relative z-10 w-full max-w-4xl aspect-[2/1] px-4"
           initial={{ scale: 1, opacity: 1 }}
-          animate={{ 
-            scale: phase >= 2 ? 8 : 1, // Immense scale for warp effect
-            opacity: phase === 3 ? 0 : 1
-          }}
-          transition={{ 
-            scale: { duration: phase >= 2 ? 3 : 0, ease: "easeIn" },
-            opacity: { duration: phase === 3 ? 1 : 0, ease: "easeOut" }
-          }}
+          animate={{ opacity: phase === 2 ? 0 : 1 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
           style={{ willChange: "transform, opacity" }}
         >
           <svg viewBox="0 0 400 200" className="w-full h-full overflow-visible">
             <defs>
-              <filter id="glow-star-lg" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <filter id="glow-star-lg" x="-200%" y="-200%" width="500%" height="500%">
+                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
                 <feMerge>
                   <feMergeNode in="coloredBlur"/>
                   <feMergeNode in="SourceGraphic"/>
@@ -123,16 +125,10 @@ export function Loader({ onComplete }: { onComplete: () => void }) {
               transition={{ duration: 1.5, ease: "easeOut" }}
             />
 
-            {/* Exploding Particles Forming "RV" and Background Warp Stars */}
+            {/* Particles */}
             {POINTS.map((p, i) => {
-              if (p.isWarp) {
-                // Background star that stretches outwards during warp
-                const warpX = p.x + Math.cos(p.angle || 0) * (p.dist || 0) * 8;
-                const warpY = p.y + Math.sin(p.angle || 0) * (p.dist || 0) * 8;
-                
-                // Varied line thickness for realism
+              if (p.isBg) {
                 const strokeThickness = Math.random() * 1.5 + 0.3;
-                
                 return (
                   <motion.line
                     key={i}
@@ -141,66 +137,45 @@ export function Loader({ onComplete }: { onComplete: () => void }) {
                     strokeLinecap="round"
                     initial={{ x1: 200, y1: 100, x2: 200, y2: 100, opacity: 0 }}
                     animate={{ 
-                      x1: phase >= 1 ? p.x : 200, 
-                      y1: phase >= 1 ? p.y : 100,
-                      x2: phase >= 1 ? (phase >= 2 ? warpX : p.x) : 200, 
-                      y2: phase >= 1 ? (phase >= 2 ? warpY : p.y) : 100,
-                      opacity: phase === 3 ? 0 : (phase >= 2 ? 0.8 : (phase >= 1 ? 0.3 : 0)),
+                      x1: phase >= 2 ? p.dispX : (phase >= 1 ? p.x : 200), 
+                      y1: phase >= 2 ? p.dispY : (phase >= 1 ? p.y : 100),
+                      x2: phase >= 2 ? p.dispX : (phase >= 1 ? p.x : 200), 
+                      y2: phase >= 2 ? p.dispY : (phase >= 1 ? p.y : 100),
+                      opacity: phase >= 2 ? 0 : (phase >= 1 ? 0.3 : 0),
                     }}
                     transition={{ 
-                      opacity: { duration: phase === 3 ? 1 : 2.5, ease: "easeOut" },
-                      default: { 
-                        duration: phase >= 2 ? 1.5 : 2.5, 
-                        ease: phase >= 2 ? "easeIn" : [0.16, 1, 0.3, 1] 
-                      }
+                      duration: phase >= 2 ? 1.5 : 2.5, 
+                      ease: phase >= 2 ? "easeOut" : [0.16, 1, 0.3, 1] 
                     }}
                   />
                 );
               }
 
-              // "RV" Initials stars
+              // "RV" Initials
               return (
                 <motion.circle
                   key={i}
-                  r={Math.random() * 1.5 + 1.2} // Slightly larger for screen-filling RV
+                  r={Math.random() * 1.5 + 1.2}
                   fill={p.color}
                   filter="url(#glow-star-lg)"
                   initial={{ cx: 200, cy: 100, opacity: 0 }}
                   animate={{ 
-                    cx: phase >= 1 ? p.x : 200, 
-                    cy: phase >= 1 ? p.y : 100,
-                    opacity: phase === 3 ? 0 : (phase >= 2 ? 0 : (phase >= 1 ? 1 : 0)) // Fade out during warp zoom
+                    cx: phase >= 2 ? p.dispX : (phase >= 1 ? p.x : 200), 
+                    cy: phase >= 2 ? p.dispY : (phase >= 1 ? p.y : 100),
+                    opacity: phase >= 2 ? 0 : (phase >= 1 ? 1 : 0)
                   }}
                   transition={{ 
-                    duration: 2.5, 
-                    ease: [0.16, 1, 0.3, 1], // Apple-like spring
+                    duration: phase >= 2 ? 1.5 : 2.5, 
+                    ease: phase >= 2 ? "easeOut" : [0.16, 1, 0.3, 1], // Apple-like spring
                     delay: phase === 1 ? Math.random() * 0.8 : 0,
-                    opacity: phase >= 2 ? { duration: 1, ease: "easeOut" } : {}
                   }}
                 />
               );
             })}
           </svg>
         </motion.div>
-
-        {/* Entering Text */}
-        <motion.div
-          className="absolute z-20 text-[#e2f1ff] tracking-[0.5em] font-light text-sm sm:text-lg md:text-xl uppercase text-center w-full"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ 
-            opacity: phase === 3 ? 0 : (phase >= 2 ? 1 : 0),
-            scale: phase >= 2 ? 1 : 0.9
-          }}
-          transition={{ 
-            opacity: { duration: phase === 3 ? 1 : 2.5, ease: "easeOut" },
-            scale: { duration: 2.5, ease: "easeOut" }
-          }}
-          style={{ textShadow: "0 0 20px rgba(100, 200, 255, 0.5)", willChange: "transform, opacity" }}
-        >
-          Entering Raghav's Universe
-        </motion.div>
-
       </div>
     </motion.div>
   );
 }
+

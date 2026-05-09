@@ -80,17 +80,21 @@ export default function Portfolio() {
         {isLoaded && <Spaceship3D />}
         <Nav />
         <main className="mx-auto max-w-6xl px-6 pb-24">
-        <Hero />
-        <Summary />
-        <Skills />
-        <Experience />
-        <Projects />
-        <Achievements />
-        <Publications />
-        <Education />
-        <Certifications />
-      </main>
-      <Footer />
+          {isLoaded && (
+            <>
+              <Hero />
+              <Summary />
+              <Skills />
+              <Experience />
+              <Projects />
+              <Achievements />
+              <Publications />
+              <Education />
+              <Certifications />
+            </>
+          )}
+        </main>
+        {isLoaded && <Footer />}
       </motion.div>
     </>
   );
@@ -168,20 +172,43 @@ function Hero() {
           </motion.div>
         </Reveal>
         
-        <Reveal delay={0.1}>
           <h1 className="mt-6 text-5xl font-bold tracking-tight md:text-7xl lg:text-8xl">
-            <span className="inline-block">Raghav</span>{" "}
+            <span className="inline-block">
+              {"Raghav".split("").map((char, index) => (
+                <motion.span
+                  key={index}
+                  className="inline-block"
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.2, delay: 1.5 + index * 0.1 }}
+                >
+                  {char === " " ? "\u00A0" : char}
+                </motion.span>
+              ))}
+            </span>{" "}
             <span className="inline-block text-accent relative">
-              Tiwari
+              {"Tiwari".split("").map((char, index) => (
+                <motion.span
+                  key={index}
+                  className="inline-block"
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.2, delay: 2.1 + index * 0.1 }}
+                >
+                  {char === " " ? "\u00A0" : char}
+                </motion.span>
+              ))}
               <motion.span 
                 className="absolute -bottom-2 left-0 h-1 bg-gradient-to-r from-[var(--space-gold)] to-[var(--space-orange)] rounded-full"
                 initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{ delay: 0.8, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                whileInView={{ width: "100%" }}
+                viewport={{ once: true }}
+                transition={{ delay: 2.8, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               />
             </span>
           </h1>
-        </Reveal>
         
         <Reveal delay={0.2}>
           <p className="mt-6 max-w-xl text-lg text-muted-foreground md:text-xl leading-relaxed">

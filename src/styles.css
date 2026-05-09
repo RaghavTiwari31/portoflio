@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
   --font-display: "Space Grotesk", system-ui, sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -59,9 +59,9 @@
   --ring: oklch(0.75 0.15 60);
 
   /* Space theme accent colors */
-  --space-cyan: oklch(0.8 0.15 200);
+  --space-cyan: oklch(0.85 0.05 210); /* Elegant ice blue/silver */
   --space-gold: oklch(0.8 0.15 80);
-  --space-purple: oklch(0.65 0.2 280);
+  --space-purple: oklch(0.8 0.08 320); /* Elegant muted rose/mauve */
   --space-orange: oklch(0.75 0.18 50);
 
   /* Legacy neon colors mapped to space theme */
@@ -89,6 +89,9 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
   }
   /* Show default cursor on touch devices */
   @media (hover: none) and (pointer: coarse) {

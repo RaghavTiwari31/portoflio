@@ -73,8 +73,8 @@ export function SpaceBackground() {
       "255, 240, 220",    // warm white
       "180, 200, 255",    // light blue
       "255, 200, 180",    // orange tint
-      "120, 200, 255",    // cyan
-      "200, 150, 255",    // purple
+      "180, 220, 255",    // elegant light blue (was cyan)
+      "220, 180, 240",    // elegant mauve/rose (was purple)
     ];
 
     const NEBULA_COLORS = [
