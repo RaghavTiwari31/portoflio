@@ -89,18 +89,39 @@ function UfoModel({ mousePos }: { mousePos: { x: number; y: number } }) {
 }
 
 export function Spaceship3D() {
-  const [scrollY, setScrollY] = useState(0);
-  const [maxScroll, setMaxScroll] = useState(1);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+  const maxScrollRef = useRef(1);
 
   useEffect(() => {
+    let ticking = false;
+
+    const updatePosition = () => {
+      if (containerRef.current) {
+        const scrollProgress = maxScrollRef.current > 0 ? window.scrollY / maxScrollRef.current : 0;
+        const topPosition = 10 + scrollProgress * 80;
+        const numCycles = 1.5; 
+        const leftPosition = 50 - Math.cos(scrollProgress * Math.PI * 2 * numCycles) * 40;
+        
+        containerRef.current.style.top = `${topPosition}%`;
+        containerRef.current.style.left = `${leftPosition}%`;
+      }
+      ticking = false;
+    };
+
     const updateMaxScroll = () => {
-      setMaxScroll(Math.max(1, document.documentElement.scrollHeight - window.innerHeight));
+      maxScrollRef.current = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      if (!ticking) {
+        window.requestAnimationFrame(updatePosition);
+        ticking = true;
+      }
     };
     
     const handleScroll = () => {
-      setScrollY(window.scrollY);
+      if (!ticking) {
+        window.requestAnimationFrame(updatePosition);
+        ticking = true;
+      }
     };
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -125,23 +146,14 @@ export function Spaceship3D() {
     };
   }, []);
 
-  const scrollProgress = maxScroll > 0 ? scrollY / maxScroll : 0;
-  
-  // Zig-zag from left to right as user scrolls down
-  const topPosition = 10 + scrollProgress * 80; // 10% to 90% of viewport
-  const numCycles = 1.5; 
-  // Math.cos goes 1 -> -1 -> 1. We want it to start left, go right, go left.
-  const leftPosition = 50 - Math.cos(scrollProgress * Math.PI * 2 * numCycles) * 40;
-
   return (
     <div
       ref={containerRef}
       className="pointer-events-none fixed z-20 w-[160px] h-[160px] sm:w-[200px] sm:h-[200px] md:w-[240px] md:h-[240px] lg:w-[280px] lg:h-[280px]"
       style={{
-        top: `${topPosition}%`,
-        left: `${leftPosition}%`,
+        top: "10%",
+        left: "10%",
         transform: "translate(-50%, -50%)",
-        transition: "top 0.1s ease-out, left 0.1s ease-out",
       }}
     >
       {/* Tractor Beam */}
