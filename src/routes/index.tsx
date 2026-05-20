@@ -25,7 +25,7 @@ const NAV = [
 
 const SKILLS: { title: string; items: string[]; accent: string }[] = [
   { title: "Programming Languages", items: ["Python", "C", "C++", "SQL", "JavaScript", "HTML", "CSS"], accent: "gold" },
-  { title: "Frameworks & Libraries", items: ["Streamlit", "Dash", "React"], accent: "purple" },
+  { title: "Frameworks & Libraries", items: ["Streamlit", "Dash", "React", "Pandas", "NumPy", "Scikit-learn", "Matplotlib", "Seaborn"], accent: "purple" },
   { title: "Technologies & Concepts", items: ["Prompt Engineering", "RAG", "LLM Pipelines", "Data Ingestion Pipelines", "Generative AI", "AI Agents", "Data Analytics"], accent: "cyan" },
   { title: "Backend", items: ["REST APIs", "API Integration", "Async Processing", "JSON", "FastAPI"], accent: "gold" },
   { title: "Databases", items: ["PostgreSQL", "MySQL", "VectorDB"], accent: "purple" },
