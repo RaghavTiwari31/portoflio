@@ -88,7 +88,7 @@ function UfoModel({ mousePos }: { mousePos: { x: number; y: number } }) {
   );
 }
 
-export function Spaceship3D() {
+export function Spaceship3D({ isShifted = false }: { isShifted?: boolean }) {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const maxScrollRef = useRef(1);
@@ -149,11 +149,12 @@ export function Spaceship3D() {
   return (
     <div
       ref={containerRef}
-      className="pointer-events-none fixed z-20 w-[160px] h-[160px] sm:w-[200px] sm:h-[200px] md:w-[240px] md:h-[240px] lg:w-[280px] lg:h-[280px]"
+      className="pointer-events-none fixed z-[60] w-[160px] h-[160px] sm:w-[200px] sm:h-[200px] md:w-[240px] md:h-[240px] lg:w-[280px] lg:h-[280px]"
       style={{
         top: "10%",
         left: "10%",
-        transform: "translate(-50%, -50%)",
+        transform: isShifted ? "translate(-110%, -50%) scale(0.7) rotate(-10deg)" : "translate(-50%, -50%) scale(1) rotate(0deg)",
+        transition: "transform 0.8s cubic-bezier(0.32, 0.72, 0, 1)",
       }}
     >
       {/* Tractor Beam */}

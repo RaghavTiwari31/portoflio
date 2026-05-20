@@ -63,6 +63,7 @@ const ACHIEVEMENTS = [
 
 export default function Portfolio() {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isCarouselHovered, setIsCarouselHovered] = useState(false);
 
   return (
     <>
@@ -77,7 +78,7 @@ export default function Portfolio() {
       >
         <SpaceBackground />
         <MouseCursor />
-        {isLoaded && <Spaceship3D />}
+        {isLoaded && <Spaceship3D isShifted={isCarouselHovered} />}
         <Nav />
         <main className="mx-auto max-w-6xl px-6 pb-24">
           {isLoaded && (
@@ -86,7 +87,7 @@ export default function Portfolio() {
               <Summary />
               <Skills />
               <Experience />
-              <Projects />
+              <Projects onHoverChange={setIsCarouselHovered} />
               <Achievements />
               <Publications />
               <Education />
@@ -229,7 +230,7 @@ function Hero() {
             <motion.a
               whileHover={{ scale: 1.03, y: -2, boxShadow: "0 0 20px rgba(255, 215, 0, 0.3)" }}
               whileTap={{ scale: 0.97 }}
-              href="/proofs/Final Resume.pdf"
+              href="/proofs/Resume.pdf"
               target="_blank"
               rel="noreferrer"
               className="group relative inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--space-gold)] to-[var(--space-orange)] px-6 py-3 text-sm font-bold text-background transition-all overflow-hidden shadow-lg w-full sm:w-auto justify-center"
@@ -428,7 +429,9 @@ function Experience() {
   );
 }
 
-function Projects() {
+function Projects({ onHoverChange }: { onHoverChange?: (hovered: boolean) => void }) {
+  const [activeIdx, setActiveIdx] = useState(0);
+
   const projects = [
     {
       name: "AquaMind",
@@ -444,7 +447,6 @@ function Projects() {
         "Designed a Model Context Protocol (MCP) layer to support persistent conversational sessions and modular tool orchestration.",
       ],
       accent: "cyan",
-      span: "md:col-span-3",
     },
     {
       name: "Forensiq",
@@ -459,27 +461,106 @@ function Projects() {
         "Developed an interactive D3.js visualization to explore suspicious transaction flows and network relationships.",
       ],
       accent: "purple",
-      span: "md:col-span-3",
     },
+    {
+      name: "Data Sage",
+      tag: "End-to-End Analytics Automation",
+      date: "Summer Internship 2025",
+      stack: ["Python 3.10+", "Pandas", "NumPy", "Seaborn", "Matplotlib", "Scikit-learn", "Streamlit"],
+      github: "https://github.com/RaghavTiwari31/DataSage",
+      points: [
+        "Developed an end-to-end automation tool that cleans, validates, analyzes, and generates insights from Excel datasets.",
+        "Automated data cleaning processes including duplicate removal, missing value handling, and format standardization.",
+        "Implemented rule-based data validation and numeric outlier detection using Interquartile Range (IQR).",
+        "Integrated visual analytics and predictive ML models including Linear Regression and Unsupervised Clustering.",
+        "Built an interactive GUI using Streamlit and generated professional styled HTML/PDF reports."
+      ],
+      accent: "gold",
+    },
+    {
+      name: "KARMA",
+      tag: "Enterprise Efficiency & Autonomous Operations",
+      date: "2026",
+      stack: ["React 18", "TypeScript", "Python", "FastAPI", "Google Gemini 2.0"],
+      github: "https://github.com/RaghavTiwari31/Karma",
+      points: [
+        "Designed a multi-agent AI system to autonomously eliminate enterprise waste by monitoring software utilization and vendor contracts in real-time.",
+        "Built a Ghost Approver agent that intercepts purchasing workflows and proposes Gemini-powered cost-saving alternatives.",
+        "Developed proactive and forensic agents to prioritize expiring contracts, identify risks, and deconstruct past cost-overruns.",
+        "Created an autonomous SLA monitor to track supplier uptime strings against SLA contracts and inject critical risks into the Waste Calendar.",
+        "Implemented a gamification feature to score departments based on cost accountability and savings."
+      ],
+      accent: "cyan",
+    }
   ];
 
   const accentColors: Record<string, { text: string; bg: string }> = {
     cyan: { text: "text-[var(--space-cyan)]", bg: "bg-[var(--space-cyan)]" },
     purple: { text: "text-[var(--space-purple)]", bg: "bg-[var(--space-purple)]" },
+    gold: { text: "text-[var(--space-gold)]", bg: "bg-[var(--space-gold)]" },
   };
+
+  const handleNext = () => setActiveIdx((prev) => (prev + 1) % projects.length);
+  const handlePrev = () => setActiveIdx((prev) => (prev - 1 + projects.length) % projects.length);
 
   return (
     <section className="mt-32">
-      <SectionHeading id="projects" kicker="04" title="PROJECTS" />
-      <div className="grid gap-5 md:grid-cols-6">
-        {projects.map((p, i) => (
-          <Reveal key={p.name} delay={i * 0.1} className={p.span}>
+      <div className="flex flex-col md:flex-row md:items-start justify-between md:pr-4">
+        <SectionHeading id="projects" kicker="04" title="PROJECTS" />
+        <div className="flex justify-center gap-4 md:mt-2 mb-8 md:mb-0 relative z-50">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={handlePrev}
+            onMouseEnter={() => onHoverChange?.(true)}
+            onMouseLeave={() => onHoverChange?.(false)}
+            className="flex h-14 w-14 items-center justify-center rounded-full transition-all bg-[var(--space-gold)] text-black hover:brightness-110 shadow-[0_0_25px_rgba(255,215,0,0.5)]"
+          >
+            <ChevronLeft className="h-6 w-6 stroke-[3]" />
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={handleNext}
+            onMouseEnter={() => onHoverChange?.(true)}
+            onMouseLeave={() => onHoverChange?.(false)}
+            className="flex h-14 w-14 items-center justify-center rounded-full transition-all bg-[var(--space-gold)] text-black hover:brightness-110 shadow-[0_0_25px_rgba(255,215,0,0.5)]"
+          >
+            <ChevronRight className="h-6 w-6 stroke-[3]" />
+          </motion.button>
+        </div>
+      </div>
+      <div className="relative -mt-6 md:-mt-10 flex h-[650px] md:h-[480px] w-full items-center justify-center overflow-visible">
+        {projects.map((p, i) => {
+          const diff = (i - activeIdx + projects.length) % projects.length;
+          const isCenter = diff === 0;
+          const isRight = diff === 1;
+          const isLeft = diff === projects.length - 1;
+
+          if (!isCenter && !isRight && !isLeft && projects.length > 3) return null;
+
+          const xOffset = isLeft ? "-55%" : isRight ? "55%" : "0%";
+          const zIndex = isCenter ? 20 : 10;
+          const scale = isCenter ? 1 : 0.85;
+          const opacity = isCenter ? 1 : 0.4;
+          const blur = isCenter ? 0 : 6;
+
+          return (
             <motion.article
-              whileHover={{ y: -6, scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 200 }}
-              className="glass group relative h-full overflow-hidden rounded-2xl p-7 transition-all hover:border-white/15 md:p-8"
+              key={p.name}
+              initial={false}
+              animate={{
+                x: xOffset,
+                scale,
+                zIndex,
+                opacity,
+                filter: `blur(${blur}px)`,
+              }}
+              transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
+              className="absolute w-[95%] md:w-[85%] max-w-2xl"
+              style={{ originX: 0.5, originY: 0.5, pointerEvents: isCenter ? "auto" : "none" }}
             >
-              <div className="relative">
+              <div className={`glass group relative h-full overflow-hidden rounded-2xl p-7 transition-all duration-300 md:p-8 ${isCenter ? "border-white/20 shadow-[0_0_40px_rgba(0,0,0,0.3)]" : "border-white/5"}`}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className={`text-xs font-semibold uppercase tracking-wider ${accentColors[p.accent].text}`}>
@@ -503,29 +584,23 @@ function Projects() {
                 <div className="mt-1 text-xs text-muted-foreground">{p.date}</div>
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {p.stack.map((s) => (
-                    <span key={s} className="rounded-md border border-white/10 bg-white/[0.03] px-2 py-0.5 text-[11px] font-medium text-muted-foreground hover:bg-white/10 transition-colors">
+                    <span key={s} className="rounded-md border border-white/10 bg-white/[0.03] px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                       {s}
                     </span>
                   ))}
                 </div>
                 <ul className="mt-5 space-y-2 text-sm text-muted-foreground">
                   {p.points.map((pt, idx) => (
-                    <motion.li 
-                      key={pt} 
-                      className="flex gap-2.5"
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      transition={{ delay: idx * 0.05 }}
-                    >
+                    <li key={idx} className="flex gap-2.5">
                       <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${accentColors[p.accent].bg}`} />
                       <span>{pt}</span>
-                    </motion.li>
+                    </li>
                   ))}
                 </ul>
               </div>
             </motion.article>
-          </Reveal>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
