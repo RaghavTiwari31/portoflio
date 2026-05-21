@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
-function UfoModel({ mousePos }: { mousePos: { x: number; y: number } }) {
+function UfoModel({ mousePosRef }: { mousePosRef: React.MutableRefObject<{ x: number; y: number }> }) {
   const groupRef = useRef<THREE.Group>(null);
   const ringRef = useRef<THREE.Mesh>(null);
   const targetRotation = useRef({ x: 0, y: 0, z: 0 });
@@ -13,9 +13,9 @@ function UfoModel({ mousePos }: { mousePos: { x: number; y: number } }) {
     const time = state.clock.elapsedTime;
     
     // React to mouse
-    targetRotation.current.x = mousePos.y * 0.4;
-    targetRotation.current.y = mousePos.x * 0.4;
-    targetRotation.current.z = -mousePos.x * 0.2;
+    targetRotation.current.x = mousePosRef.current.y * 0.4;
+    targetRotation.current.y = mousePosRef.current.x * 0.4;
+    targetRotation.current.z = -mousePosRef.current.x * 0.2;
 
     groupRef.current.rotation.x += (targetRotation.current.x - groupRef.current.rotation.x) * 0.05;
     groupRef.current.rotation.y += (targetRotation.current.y - groupRef.current.rotation.y) * 0.05;
@@ -89,8 +89,9 @@ function UfoModel({ mousePos }: { mousePos: { x: number; y: number } }) {
 }
 
 export function Spaceship3D({ isShifted = false }: { isShifted?: boolean }) {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const mousePosRef = useRef({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+  const tractorBeamRef = useRef<HTMLDivElement>(null);
   const maxScrollRef = useRef(1);
 
   useEffect(() => {
@@ -125,10 +126,13 @@ export function Spaceship3D({ isShifted = false }: { isShifted?: boolean }) {
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({
-        x: (e.clientX / window.innerWidth) * 2 - 1,
-        y: -(e.clientY / window.innerHeight) * 2 + 1
-      });
+      const x = (e.clientX / window.innerWidth) * 2 - 1;
+      const y = -(e.clientY / window.innerHeight) * 2 + 1;
+      mousePosRef.current = { x, y };
+      
+      if (tractorBeamRef.current) {
+        tractorBeamRef.current.style.transform = `translateX(-50%) rotate(${-x * 15}deg)`;
+      }
     };
 
     updateMaxScroll();
@@ -151,21 +155,20 @@ export function Spaceship3D({ isShifted = false }: { isShifted?: boolean }) {
       ref={containerRef}
       className="pointer-events-none fixed z-[60] w-[160px] h-[160px] sm:w-[200px] sm:h-[200px] md:w-[240px] md:h-[240px] lg:w-[280px] lg:h-[280px]"
       style={{
-        top: "10%",
-        left: "10%",
         transform: isShifted ? "translate(-110%, -50%) scale(0.7) rotate(-10deg)" : "translate(-50%, -50%) scale(1) rotate(0deg)",
         transition: "transform 0.8s cubic-bezier(0.32, 0.72, 0, 1)",
       }}
     >
       {/* Tractor Beam */}
       <div 
+        ref={tractorBeamRef}
         className="absolute left-1/2 top-[60%] w-[150px] h-[200px] sm:w-[200px] sm:h-[300px] mix-blend-screen origin-top"
         style={{
           background: "linear-gradient(to bottom, rgba(100, 200, 255, 0.25) 0%, rgba(100, 200, 255, 0) 100%)",
           clipPath: "polygon(30% 0, 70% 0, 100% 100%, 0 100%)",
           filter: "blur(8px)",
           zIndex: -1,
-          transform: `translateX(-50%) rotate(${-mousePos.x * 15}deg)`,
+          transform: "translateX(-50%) rotate(0deg)",
           transition: "transform 0.1s ease-out"
         }}
       />
@@ -186,7 +189,7 @@ export function Spaceship3D({ isShifted = false }: { isShifted?: boolean }) {
         <ambientLight intensity={0.4} />
         <directionalLight position={[5, 10, 5]} intensity={1.5} color="#FFFFFF" />
         <directionalLight position={[-5, 5, -5]} intensity={0.8} color="#64C8FF" />
-        <UfoModel mousePos={mousePos} />
+        <UfoModel mousePosRef={mousePosRef} />
       </Canvas>
     </div>
   );
