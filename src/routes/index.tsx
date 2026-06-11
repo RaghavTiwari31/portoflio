@@ -48,10 +48,16 @@ const ACHIEVEMENTS = [
     accent: "gold",
   },
   {
-    title: "Rift26 — Physics Wallah Institute of Innovation",
+    title: "Rift26-Physics Wallah Institute of Innovation",
     sub: "1st in problem statement · 5th overall",
     body: "Secured 1st position in our problem statement and ranked 5th overall among participating teams in a 24-hour national-level hackathon.",
     accent: "purple",
+  },
+  {
+    title: "iQOO x Reskill Hackathon 2026",
+    sub: "4th Position (Special Honour)",
+    body: "Secured 4th Position (Special Honour) among 80+ teams in a national-level hackathon organized by iQOO and Reskill, earning a ₹10,000 cash prize.",
+    accent: "gold",
   },
   {
     title: "Vibecon — Emergent AI at IIT Delhi",
@@ -625,6 +631,7 @@ function Achievements() {
     0: "/proofs/iiit delhi proof.jpeg",
     1: "/proofs/RIFT26-Certificate-Raghav-Tiwari.jpg",
     2: "",
+    3: "",
   };
 
   const currentProof = proofMap[idx];
