@@ -116,6 +116,7 @@ function OrbitRing({ radius }: { radius: number }) {
   }, [points]);
 
   return (
+    // @ts-expect-error - react-three-fiber line vs svg line type conflict
     <line geometry={geometry}>
       <lineBasicMaterial color="#ffffff" transparent opacity={0.08} />
     </line>

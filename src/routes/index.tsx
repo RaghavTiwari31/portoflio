@@ -24,14 +24,14 @@ const NAV = [
 ];
 
 const SKILLS: { title: string; items: string[]; accent: string }[] = [
-  { title: "Programming Languages", items: ["Python", "C", "C++", "SQL", "JavaScript", "HTML", "CSS"], accent: "gold" },
+  { title: "Programming Languages", items: ["Python", "C", "C++", "SQL", "JavaScript", "HTML", "CSS", "Java"], accent: "gold" },
   { title: "Frameworks & Libraries", items: ["Streamlit", "Dash", "React", "Pandas", "NumPy", "Scikit-learn", "Matplotlib", "Seaborn"], accent: "purple" },
-  { title: "Technologies & Concepts", items: ["Prompt Engineering", "RAG", "LLM Pipelines", "Data Ingestion Pipelines", "Generative AI", "AI Agents", "Data Analytics"], accent: "cyan" },
+  { title: "Technologies & Concepts", items: ["Prompt Engineering", "Retrieval-Augmented Generation (RAG)", "LLM", "Generative AI", "AI Agents", "Data Analytics", "A/B Testing"], accent: "cyan" },
   { title: "Backend", items: ["REST APIs", "API Integration", "Async Processing", "JSON", "FastAPI"], accent: "gold" },
   { title: "Databases", items: ["PostgreSQL", "MySQL", "VectorDB"], accent: "purple" },
-  { title: "Tools", items: ["VS Code", "IntelliJ IDEA", "Vercel", "Git", "GitHub", "Antigravity"], accent: "cyan" },
-  { title: "Methodologies & Professional Skills", items: ["Agile", "SDLC", "Research", "Thinking"], accent: "gold" },
-  { title: "Design & Visual Communication", items: ["Canva", "Photoshop", "Typography", "Branding", "Layout Design"], accent: "purple" },
+  { title: "Tools", items: ["Vercel", "Git", "GitHub", "Claude", "Jira", "MS Excel/Google Sheets", "Power BI"], accent: "cyan" },
+  { title: "Methodologies & Professional Skills", items: ["Agile", "SDLC", "Research", "Analytical Thinking", "Product Roadmaps", "Market Research", "Competitor Analysis"], accent: "gold" },
+  { title: "Creative Skills", items: ["Canva", "Photoshop", "Typography", "Branding", "Layout Design"], accent: "purple" },
 ];
 
 const accentMap: Record<string, string> = {
@@ -234,19 +234,19 @@ function Hero() {
               <HeroLink href={`mailto:${EMAIL}`} icon={<Mail className="h-4 w-4" />} label="Email" accent="gold" />
             </div>
             <motion.a
-              whileHover={{ scale: 1.03, y: -2, boxShadow: "0 0 20px rgba(255, 215, 0, 0.3)" }}
               whileTap={{ scale: 0.97 }}
               href="/proofs/Resume.pdf"
               target="_blank"
               rel="noreferrer"
-              className="group relative inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--space-gold)] to-[var(--space-orange)] px-6 py-3 text-sm font-bold text-background transition-all overflow-hidden shadow-lg w-full sm:w-auto justify-center"
+              className="group relative inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-[var(--space-gold)] transition-all overflow-hidden w-full sm:w-auto justify-center border border-white/10 hover:border-transparent bg-white/[0.02]"
             >
+              <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,transparent_75%,var(--space-gold)_100%)] -z-10" />
+              <span className="absolute inset-[1px] rounded-[11px] bg-[var(--background)] -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <span className="relative z-10 flex items-center gap-2">
                 <Briefcase className="h-4 w-4" />
                 View Resume
-                <ArrowUpRight className="h-4 w-4 opacity-70 transition-all group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                <ArrowUpRight className="h-4 w-4 opacity-50 transition-all group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </span>
-              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
             </motion.a>
           </div>
         </Reveal>
@@ -280,7 +280,6 @@ function HeroLink({ href, icon, label, accent }: { href: string; icon: React.Rea
   };
   return (
     <motion.a
-      whileHover={{ scale: 1.03, y: -2 }}
       whileTap={{ scale: 0.97 }}
       href={href}
       target={href.startsWith("http") ? "_blank" : undefined}
