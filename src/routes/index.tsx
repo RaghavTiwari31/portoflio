@@ -1,903 +1,845 @@
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { Github, Linkedin, Mail, ArrowUpRight, MapPin, ExternalLink, Trophy, GraduationCap, Award, BookOpen, Briefcase, Sparkles, ChevronLeft, ChevronRight, Rocket } from "lucide-react";
-import { useState, useRef } from "react";
+import { AnimatePresence, motion, useInView } from "framer-motion";
+import { ArrowUpRight, ChevronLeft, ChevronRight, Copy, FileText, Github, Linkedin, Mail, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
-import { SpaceBackground } from "@/components/SpaceBackground";
-import { SolarSystem3D } from "@/components/SolarSystem3D";
-import { MouseCursor } from "@/components/MouseCursor";
-import { Spaceship3D } from "@/components/Spaceship3D";
-import { Reveal } from "@/components/Reveal";
+import { AltitudeRail } from "@/components/AltitudeRail";
+import { CommandConsole } from "@/components/CommandConsole";
+import { FlightDeck } from "@/components/FlightDeck";
 import { Loader } from "@/components/Loader";
+import { MissionPatch } from "@/components/MissionPatch";
+import { OrbitNav } from "@/components/OrbitNav";
+import { Reveal } from "@/components/Reveal";
+import { SpaceBackground } from "@/components/SpaceBackground";
+import { ACHIEVEMENTS, EDUCATION, EXPERIENCE, PROFILE, PROJECTS, PUBLICATIONS, SECTIONS, SKILLS, STATS, type SectionId } from "@/data";
+import { goTo, useActiveSection } from "@/lib/nav";
 
-const EMAIL = "raghav31.tiwari@gmail.com";
-const GITHUB = "https://github.com/RaghavTiwari31";
-const LINKEDIN = "https://linkedin.com/in/raghav-tiwari-225b22326/";
+const SECTION_IDS = SECTIONS.map((s) => s.id);
+const NO_IDS: string[] = [];
+const BOOT_KEY = "rt-booted";
 
-const NAV = [
-  { id: "summary", label: "About" },
-  { id: "skills", label: "Skills" },
-  { id: "experience", label: "Experience" },
-  { id: "projects", label: "Projects" },
-  { id: "achievements", label: "Achievements" },
-  { id: "publications", label: "Publications" },
-  { id: "education", label: "Education" },
-];
-
-const SKILLS: { title: string; items: string[]; accent: string }[] = [
-  { title: "Programming Languages", items: ["Python", "C", "C++", "SQL", "JavaScript", "HTML", "CSS", "Java"], accent: "gold" },
-  { title: "Frameworks & Libraries", items: ["Streamlit", "Dash", "React", "Pandas", "NumPy", "Scikit-learn", "Matplotlib", "Seaborn"], accent: "purple" },
-  { title: "Technologies & Concepts", items: ["Prompt Engineering", "Retrieval-Augmented Generation (RAG)", "LLM", "Generative AI", "AI Agents", "Data Analytics", "A/B Testing"], accent: "cyan" },
-  { title: "Backend", items: ["REST APIs", "API Integration", "Async Processing", "JSON", "FastAPI"], accent: "gold" },
-  { title: "Databases", items: ["PostgreSQL", "MySQL", "VectorDB"], accent: "purple" },
-  { title: "Tools", items: ["Vercel", "Git", "GitHub", "Claude", "Jira", "MS Excel/Google Sheets", "Power BI"], accent: "cyan" },
-  { title: "Methodologies & Professional Skills", items: ["Agile", "SDLC", "Research", "Analytical Thinking", "Product Roadmaps", "Market Research", "Competitor Analysis"], accent: "gold" },
-  { title: "Creative Skills", items: ["Canva", "Photoshop", "Typography", "Branding", "Layout Design"], accent: "purple" },
-];
-
-const accentMap: Record<string, string> = {
-  gold: "text-[var(--space-gold)] border-[var(--space-gold)]/30 hover:border-[var(--space-gold)]/70 hover:bg-[var(--space-gold)]/10",
-  purple: "text-[var(--space-purple)] border-[var(--space-purple)]/30 hover:border-[var(--space-purple)]/70 hover:bg-[var(--space-purple)]/10",
-  cyan: "text-[var(--space-cyan)] border-[var(--space-cyan)]/30 hover:border-[var(--space-cyan)]/70 hover:bg-[var(--space-cyan)]/10",
-};
-
-const ACHIEVEMENTS = [
-  {
-    title: "1st Place – IndustrySolve 2025",
-    sub: "Ideathon & Productathon, IIIT Delhi",
-    body: "Won both rounds out of 150+ teams, advancing to the top 20 finalist Productathon. Led end-to-end design and development of the solution, delivering a fully functional prototype that secured a ₹40,000 award.",
-    accent: "gold",
-  },
-  {
-    title: "Rift26-Physics Wallah Institute of Innovation",
-    sub: "1st in problem statement · 5th overall",
-    body: "Secured 1st position in our problem statement and ranked 5th overall among participating teams in a 24-hour national-level hackathon.",
-    accent: "purple",
-  },
-  {
-    title: "iQOO x Reskill Hackathon 2026",
-    sub: "4th Position (Special Honour)",
-    body: "Secured 4th Position (Special Honour) among 80+ teams in a national-level hackathon organized by iQOO and Reskill, earning a ₹10,000 cash prize.",
-    accent: "gold",
-  },
-  {
-    title: "Vibecon — Emergent AI at IIT Delhi",
-    sub: "Invite-only national hackathon",
-    body: "Selected to participate in an exclusive, invite-only 24-hour national hackathon, collaborating with top student innovators to build and present a high-impact AI-driven solution under tight deadlines.",
-    accent: "cyan",
-  },
-];
+function hasBooted() {
+  try {
+    return sessionStorage.getItem(BOOT_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
 
 export default function Portfolio() {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isCarouselHovered, setIsCarouselHovered] = useState(false);
+  const [loaded, setLoaded] = useState(hasBooted);
+  const [consoleOpen, setConsoleOpen] = useState(false);
+  const active = useActiveSection(loaded ? SECTION_IDS : NO_IDS);
+
+  const finishBoot = useCallback(() => {
+    try {
+      sessionStorage.setItem(BOOT_KEY, "1");
+    } catch {
+      /* storage unavailable — boot will simply replay next time */
+    }
+    setLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement;
+      const typing = el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable;
+      if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || (e.key === "/" && !typing)) {
+        e.preventDefault();
+        setConsoleOpen((o) => !o);
+      } else if (e.key === "Escape") {
+        setConsoleOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Honour deep links (e.g. /#missions) once content has mounted
+  useEffect(() => {
+    if (!loaded) return;
+    const hash = window.location.hash.slice(1);
+    if (hash) setTimeout(() => goTo(hash), 100);
+  }, [loaded]);
 
   return (
     <>
-      <AnimatePresence>
-        {!isLoaded && <Loader onComplete={() => setIsLoaded(true)} />}
-      </AnimatePresence>
-      <motion.div 
-        className="relative min-h-screen text-foreground"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isLoaded ? 1 : 0 }}
-        transition={{ duration: 1.5, ease: "easeOut" }}
-      >
-        <SpaceBackground />
-        <MouseCursor />
-        {isLoaded && <Spaceship3D isShifted={isCarouselHovered} />}
-        <Nav />
-        <main className="mx-auto max-w-6xl px-6 pb-24">
-          {isLoaded && (
-            <>
-              <Hero />
-              <Summary />
+      <SpaceBackground />
+      <AnimatePresence>{!loaded && <Loader onComplete={finishBoot} />}</AnimatePresence>
+
+      {loaded && (
+        <>
+          <FlightDeck active={active} onConsole={() => setConsoleOpen(true)} />
+          <AltitudeRail active={active} />
+          <CommandConsole open={consoleOpen} onClose={() => setConsoleOpen(false)} />
+
+          <main className="relative">
+            <Hero onConsole={() => setConsoleOpen(true)} />
+            <Ticker />
+            <div className="mx-auto max-w-6xl px-4 sm:px-6">
+              <Brief />
               <Skills />
-              <Experience />
-              <Projects onHoverChange={setIsCarouselHovered} />
-              <Achievements />
-              <Publications />
-              <Education />
-              <Certifications />
-            </>
-          )}
-        </main>
-        {isLoaded && <Footer />}
-      </motion.div>
+              <FlightLog />
+              <Missions />
+              <Awards />
+              <Papers />
+              <Training />
+              <Comms />
+            </div>
+          </main>
+          <Footer />
+        </>
+      )}
     </>
   );
 }
 
-function Nav() {
-  return (
-    <motion.header
-      initial={{ y: -30, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      className="fixed top-4 left-1/2 z-50 -translate-x-1/2 px-4 w-[min(960px,95vw)]"
-    >
-      <div className="glass-strong flex items-center justify-between rounded-2xl px-4 py-2.5">
-        <a href="#top" className="flex items-center gap-2 text-sm font-bold tracking-tight group">
-          <span className="relative h-2.5 w-2.5">
-            <span className="absolute inset-0 rounded-full bg-[var(--space-gold)] animate-pulse-glow" />
-            <span className="absolute inset-0 rounded-full bg-[var(--space-gold)] blur-sm opacity-50" />
-          </span>
-          <span className="group-hover:text-[var(--space-gold)] transition-colors">RT</span>
-        </a>
-        <nav className="hidden md:flex items-center gap-1">
-          {NAV.map((n) => (
-            <a 
-              key={n.id} 
-              href={`#${n.id}`} 
-              className="relative rounded-lg px-3 py-1.5 text-xs text-muted-foreground transition-all hover:text-foreground group"
-            >
-              <span className="relative z-10">{n.label}</span>
-              <span className="absolute inset-0 rounded-lg bg-white/0 group-hover:bg-white/5 transition-colors" />
-            </a>
-          ))}
-        </nav>
-        <a 
-          href={`mailto:${EMAIL}`} 
-          className="relative rounded-lg bg-gradient-to-r from-[var(--space-gold)] to-[var(--space-orange)] px-4 py-1.5 text-xs font-semibold text-background transition-all hover:scale-105 hover:brightness-110"
-        >
-          Contact
-        </a>
-      </div>
-    </motion.header>
-  );
-}
+/* ───────────────────────── Shared bits ───────────────────────── */
 
-function Hero() {
-  const containerRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end start"]
-  });
-  
-  const y = useTransform(scrollYProgress, [0, 1], [0, 200]);
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-
+function Section({ id, children }: { id: SectionId; children: ReactNode }) {
+  const meta = SECTIONS.find((s) => s.id === id)!;
   return (
-    <section 
-      ref={containerRef}
-      id="top" 
-      className="relative flex min-h-screen flex-col justify-center pt-24 overflow-hidden"
-    >
-      {/* 3D Solar System positioned on the right */}
-      <SolarSystem3D />
-      
-      <motion.div style={{ y, opacity }} className="relative z-10">
-        <Reveal>
-          <motion.div 
-            className="flex items-center gap-2 text-xs text-muted-foreground"
-            whileHover={{ x: 5 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <MapPin className="h-3.5 w-3.5 text-[var(--space-gold)]" />
-            <span>NOIDA, India</span>
-            <span className="mx-2 h-1 w-1 rounded-full bg-[var(--space-gold)] animate-pulse-glow" />
-            <span>Available for opportunities</span>
-          </motion.div>
-        </Reveal>
-        
-          <h1 className="mt-6 text-5xl font-bold tracking-tight md:text-7xl lg:text-8xl">
-            <span className="inline-block">
-              {"Raghav".split("").map((char, index) => (
-                <motion.span
-                  key={index}
-                  className="inline-block"
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.2, delay: 1.5 + index * 0.1 }}
-                >
-                  {char === " " ? "\u00A0" : char}
-                </motion.span>
-              ))}
-            </span>{" "}
-            <span className="inline-block text-accent relative">
-              {"Tiwari".split("").map((char, index) => (
-                <motion.span
-                  key={index}
-                  className="inline-block"
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.2, delay: 2.1 + index * 0.1 }}
-                >
-                  {char === " " ? "\u00A0" : char}
-                </motion.span>
-              ))}
-              <motion.span 
-                className="absolute -bottom-2 left-0 h-1 bg-gradient-to-r from-[var(--space-gold)] to-[var(--space-orange)] rounded-full"
-                initial={{ width: 0 }}
-                whileInView={{ width: "100%" }}
-                viewport={{ once: true }}
-                transition={{ delay: 2.8, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              />
-            </span>
-          </h1>
-        
-        <Reveal delay={0.2}>
-          <p className="mt-6 max-w-xl text-lg text-muted-foreground md:text-xl leading-relaxed">
-            Software Engineering Student — building{" "}
-            <span className="text-highlight-cyan">AI-powered systems</span>,{" "}
-            <span className="text-highlight-purple">RAG pipelines</span> and{" "}
-            <span className="text-highlight-gold">data-driven applications</span>.
-          </p>
-        </Reveal>
-        
-        <Reveal delay={0.3}>
-          <div className="mt-10 flex flex-col items-start gap-4">
-            <div className="flex flex-wrap gap-3">
-              <HeroLink href={GITHUB} icon={<Github className="h-4 w-4" />} label="Github" accent="cyan" />
-              <HeroLink href={LINKEDIN} icon={<Linkedin className="h-4 w-4" />} label="LinkedIn" accent="purple" />
-              <HeroLink href={`mailto:${EMAIL}`} icon={<Mail className="h-4 w-4" />} label="Email" accent="gold" />
-            </div>
-            <motion.a
-              whileTap={{ scale: 0.97 }}
-              href="/proofs/Resume.pdf"
-              target="_blank"
-              rel="noreferrer"
-              className="group relative inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-[var(--space-gold)] transition-all overflow-hidden w-full sm:w-auto justify-center border border-white/10 hover:border-transparent bg-white/[0.02]"
-            >
-              <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,transparent_75%,var(--space-gold)_100%)] -z-10" />
-              <span className="absolute inset-[1px] rounded-[11px] bg-[var(--background)] -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <span className="relative z-10 flex items-center gap-2">
-                <Briefcase className="h-4 w-4" />
-                View Resume
-                <ArrowUpRight className="h-4 w-4 opacity-50 transition-all group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </span>
-            </motion.a>
+    <section id={id} className="scroll-mt-20 pt-28 md:pt-36" aria-labelledby={`${id}-title`}>
+      <Reveal>
+        <div className="mb-10 md:mb-14">
+          <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.2em]">
+            <span className="bg-[var(--c-red)] px-1.5 py-0.5 font-semibold text-[var(--c-space)]">SEC {meta.code}</span>
+            <span className="text-[var(--c-dim)]">{meta.label}</span>
+            <span className="h-px flex-1 bg-[var(--c-line)]" />
+            <span className="hidden text-[var(--c-line-strong)] sm:inline">{meta.code} / 08</span>
           </div>
-        </Reveal>
-        
-        {/* Scroll indicator */}
-        <Reveal delay={0.5}>
-          <motion.div 
-            className="mt-20 flex flex-col items-center gap-2"
-            animate={{ y: [0, 8, 0] }}
-            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-          >
-            <span className="text-xs text-muted-foreground uppercase tracking-widest">Explore</span>
-            <Rocket className="h-4 w-4 text-[var(--space-gold)] rotate-180" />
-          </motion.div>
-        </Reveal>
-      </motion.div>
-    </section>
-  );
-}
-
-function HeroLink({ href, icon, label, accent }: { href: string; icon: React.ReactNode; label: string; accent: string }) {
-  const borderMap: Record<string, string> = {
-    cyan: "hover:border-[var(--space-cyan)]/50",
-    purple: "hover:border-[var(--space-purple)]/50",
-    gold: "hover:border-[var(--space-gold)]/50",
-  };
-  const textMap: Record<string, string> = {
-    cyan: "group-hover:text-[var(--space-cyan)]",
-    purple: "group-hover:text-[var(--space-purple)]",
-    gold: "group-hover:text-[var(--space-gold)]",
-  };
-  return (
-    <motion.a
-      whileTap={{ scale: 0.97 }}
-      href={href}
-      target={href.startsWith("http") ? "_blank" : undefined}
-      rel="noreferrer"
-      className={`glass group inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium transition-all duration-300 ${borderMap[accent]}`}
-    >
-      <span className={`transition-colors ${textMap[accent]}`}>{icon}</span>
-      <span>{label}</span>
-      <ArrowUpRight className="h-3.5 w-3.5 opacity-50 transition-all group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-    </motion.a>
-  );
-}
-
-function SectionHeading({ kicker, title, id }: { kicker: string; title: string; id: string }) {
-  return (
-    <Reveal>
-      <div id={id} className="mb-10 scroll-mt-28">
-        <motion.div 
-          className="flex items-center gap-3"
-          whileInView={{ opacity: 1, x: 0 }}
-          initial={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.5 }}
-        >
-          <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--space-gold)]">{kicker}</span>
-          <span className="h-px flex-1 max-w-16 bg-gradient-to-r from-[var(--space-gold)]/50 to-transparent" />
-        </motion.div>
-        <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">{title}</h2>
-      </div>
-    </Reveal>
-  );
-}
-
-function Summary() {
-  return (
-    <section className="mt-32">
-      <SectionHeading id="summary" kicker="01" title="PROFESSIONAL SUMMARY" />
-      <Reveal>
-        <motion.div 
-          className="glass rounded-2xl p-8 md:p-10 hover-lift"
-          whileHover={{ scale: 1.01 }}
-          transition={{ type: "spring", stiffness: 200 }}
-        >
-          <p className="text-lg leading-relaxed text-muted-foreground md:text-xl">
-            B.Tech Computer Science student specializing in building{" "}
-            <span className="text-highlight-cyan">AI-powered systems</span> and{" "}
-            <span className="text-highlight-purple">data-driven applications</span>. Experienced in developing
-            RAG pipelines, backend APIs, and automation workflows using Python, FastAPI, and PostgreSQL. Strong focus on{" "}
-            <span className="text-highlight-gold">LLM-based systems, prompt engineering, and scalable AI pipelines</span>,
-            with applied research experience and strong design thinking for building intuitive, user-centric solutions.
-          </p>
-        </motion.div>
-      </Reveal>
-    </section>
-  );
-}
-
-function Skills() {
-  return (
-    <section className="mt-32">
-      <SectionHeading id="skills" kicker="02" title="TECHNICAL & CREATIVE SKILLS" />
-      <div className="grid gap-5 md:grid-cols-2">
-        {SKILLS.map((cat, i) => (
-          <Reveal key={cat.title} delay={i * 0.05}>
-            <motion.div 
-              whileHover={{ y: -6, scale: 1.01 }} 
-              transition={{ type: "spring", stiffness: 200 }}
-              className="glass group h-full rounded-2xl p-6 transition-all hover:border-white/15"
-            >
-              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">{cat.title}</h3>
-              <div className="flex flex-wrap gap-2">
-                {cat.items.map((s, idx) => (
-                  <motion.span 
-                    key={s} 
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: idx * 0.03 }}
-                    className={`rounded-full border bg-white/[0.02] px-3 py-1.5 text-xs font-medium transition-all duration-300 hover:scale-110 cursor-default ${accentMap[cat.accent]}`}
-                  >
-                    {s}
-                  </motion.span>
-                ))}
-              </div>
-            </motion.div>
-          </Reveal>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function Experience() {
-  return (
-    <section className="mt-32">
-      <SectionHeading id="experience" kicker="03" title="PROFESSIONAL EXPERIENCE" />
-      <Reveal>
-        <div className="relative pl-8 md:pl-10">
-          <motion.div 
-            className="absolute left-0 top-2 bottom-2 w-px bg-gradient-to-b from-[var(--space-gold)] via-[var(--space-gold)]/20 to-transparent"
-            initial={{ height: 0 }}
-            whileInView={{ height: "100%" }}
-            transition={{ duration: 1, ease: "easeOut" }}
-          />
-          <motion.div 
-            className="absolute left-[-5px] top-3 h-3 w-3 rounded-full bg-[var(--space-gold)]"
-            initial={{ scale: 0 }}
-            whileInView={{ scale: 1 }}
-            transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-          >
-            <span className="absolute inset-0 rounded-full bg-[var(--space-gold)] animate-ping opacity-30" />
-          </motion.div>
-          <motion.div 
-            className="glass rounded-2xl p-7 md:p-8 hover-lift"
-            whileHover={{ scale: 1.01 }}
-            transition={{ type: "spring", stiffness: 200 }}
-          >
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Briefcase className="h-4 w-4 text-[var(--space-gold)]" />
-                  Gaurs Group · Ghaziabad, India
-                </div>
-                <h3 className="mt-2 text-xl font-bold md:text-2xl">Data Management Specialist Intern</h3>
-              </div>
-              <span className="rounded-full border border-[var(--space-gold)]/30 bg-[var(--space-gold)]/5 px-3 py-1 text-xs font-medium text-[var(--space-gold)]">
-                Jun 2025 – Jul 2025
-              </span>
-            </div>
-            <ul className="mt-5 space-y-2.5 text-sm text-muted-foreground md:text-[15px]">
-              {[
-                "Streamlined data collection and organization by designing structured workflows for large-scale real estate datasets, improving data accessibility, consistency, and data integrity.",
-                "Automated data validation and reporting processes using Python and Excel-based tools, reducing manual effort and turnaround time by approximately 40%.",
-                "Collaborated with cross-functional teams to analyze operational data and support data-driven management decisions.",
-                "Applied research-driven and analytical methodologies to identify optimization opportunities in data handling and storage systems.",
-                "Gained hands-on experience in data analysis, automation scripting, technical documentation, and structured data management.",
-              ].map((line, idx) => (
-                <motion.li 
-                  key={line} 
-                  className="flex gap-3"
-                  initial={{ opacity: 0, x: -10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                >
-                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--space-gold)]" />
-                  <span>{line}</span>
-                </motion.li>
-              ))}
-            </ul>
-          </motion.div>
+          <h2 id={`${id}-title`} className="mt-4 text-6xl font-black md:text-8xl">
+            {meta.short}
+          </h2>
         </div>
       </Reveal>
+      {children}
     </section>
   );
 }
 
-function Projects({ onHoverChange }: { onHoverChange?: (hovered: boolean) => void }) {
-  const [activeIdx, setActiveIdx] = useState(0);
+function ExtLink({ href, children, className = "btn" }: { href: string; children: ReactNode; className?: string }) {
+  const external = href.startsWith("http") || href.endsWith(".pdf");
+  return (
+    <a href={href} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined} className={className}>
+      {children}
+    </a>
+  );
+}
 
-  const projects = [
-    {
-      name: "AquaMind",
-      tag: "RAG · Oceanographic AI",
-      date: "Jul 2025 – Oct 2025",
-      stack: ["FastAPI", "PostgreSQL", "pgvector", "Google Gemini API", "Dash"],
-      github: "https://github.com/RaghavTiwari31/AquaMind",
-      points: [
-        "Developed a Retrieval-Augmented Generation (RAG) system for querying multi-year ARGO oceanographic datasets using natural language.",
-        "Implemented backend APIs using FastAPI and PostgreSQL with pgvector for embedding-based semantic search.",
-        "Integrated Google Gemini API to generate SQL queries, summarize results, and provide contextual insights from structured data.",
-        "Built an interactive Dash-based web application for real-time chat, data visualization, and geospatial exploration of ocean parameters.",
-        "Designed a Model Context Protocol (MCP) layer to support persistent conversational sessions and modular tool orchestration.",
-      ],
-      accent: "cyan",
-    },
-    {
-      name: "Forensiq",
-      tag: "Winner at RIFT'26 · Graph Forensics",
-      date: "Feb 2026",
-      stack: ["Node.js", "Express", "React", "D3.js", "Graph Algorithms"],
-      github: "https://github.com/RaghavTiwari31/Forensiq",
-      points: [
-        "Built a graph-based financial forensics system that analyzes transaction networks to detect fraud patterns including circular fund routing, smurfing (fan-in/fan-out), and layered shell networks.",
-        "Designed a detection pipeline that converts transaction CSV data into directed graphs and runs parallel algorithms to identify suspicious accounts and fraud rings.",
-        "Implemented filtering mechanisms to reduce false positives from legitimate high-volume entities such as exchanges, merchants, and payroll systems.",
-        "Developed an interactive D3.js visualization to explore suspicious transaction flows and network relationships.",
-      ],
-      accent: "purple",
-    },
-    {
-      name: "Data Sage",
-      tag: "End-to-End Analytics Automation",
-      date: "Summer Internship 2025",
-      stack: ["Python 3.10+", "Pandas", "NumPy", "Seaborn", "Matplotlib", "Scikit-learn", "Streamlit"],
-      github: "https://github.com/RaghavTiwari31/DataSage",
-      points: [
-        "Developed an end-to-end automation tool that cleans, validates, analyzes, and generates insights from Excel datasets.",
-        "Automated data cleaning processes including duplicate removal, missing value handling, and format standardization.",
-        "Implemented rule-based data validation and numeric outlier detection using Interquartile Range (IQR).",
-        "Integrated visual analytics and predictive ML models including Linear Regression and Unsupervised Clustering.",
-        "Built an interactive GUI using Streamlit and generated professional styled HTML/PDF reports."
-      ],
-      accent: "gold",
-    },
-    {
-      name: "KARMA",
-      tag: "Enterprise Efficiency & Autonomous Operations",
-      date: "2026",
-      stack: ["React 18", "TypeScript", "Python", "FastAPI", "Google Gemini 2.0"],
-      github: "https://github.com/RaghavTiwari31/Karma",
-      points: [
-        "Designed a multi-agent AI system to autonomously eliminate enterprise waste by monitoring software utilization and vendor contracts in real-time.",
-        "Built a Ghost Approver agent that intercepts purchasing workflows and proposes Gemini-powered cost-saving alternatives.",
-        "Developed proactive and forensic agents to prioritize expiring contracts, identify risks, and deconstruct past cost-overruns.",
-        "Created an autonomous SLA monitor to track supplier uptime strings against SLA contracts and inject critical risks into the Waste Calendar.",
-        "Implemented a gamification feature to score departments based on cost accountability and savings."
-      ],
-      accent: "cyan",
-    }
+function Counter({ value, decimals }: { value: number; decimals: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true });
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    if (!inView) return;
+    const start = performance.now();
+    let raf = 0;
+    const step = (t: number) => {
+      const p = Math.min(1, (t - start) / 1200);
+      setN(value * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [inView, value]);
+  return (
+    <span ref={ref} className="tabular-nums">
+      {decimals ? n.toFixed(decimals) : String(Math.round(n)).padStart(2, "0")}
+    </span>
+  );
+}
+
+/* ───────────────────────── Hero ───────────────────────── */
+
+function Hero({ onConsole }: { onConsole: () => void }) {
+  const current = EXPERIENCE.find((e) => e.active);
+  const rows = [
+    ["Callsign", PROFILE.name],
+    ["Base", PROFILE.base],
+    ["Current orbit", current ? `${current.role} @ EDMO` : PROFILE.role],
+    ["Trajectory", "Applied AI · Intelligent systems"],
   ];
 
-  const accentColors: Record<string, { text: string; bg: string }> = {
-    cyan: { text: "text-[var(--space-cyan)]", bg: "bg-[var(--space-cyan)]" },
-    purple: { text: "text-[var(--space-purple)]", bg: "bg-[var(--space-purple)]" },
-    gold: { text: "text-[var(--space-gold)]", bg: "bg-[var(--space-gold)]" },
-  };
-
-  const handleNext = () => setActiveIdx((prev) => (prev + 1) % projects.length);
-  const handlePrev = () => setActiveIdx((prev) => (prev - 1 + projects.length) % projects.length);
-
   return (
-    <section className="mt-32">
-      <div className="flex flex-col md:flex-row md:items-start justify-between md:pr-4">
-        <SectionHeading id="projects" kicker="04" title="PROJECTS" />
-        <div className="flex justify-center gap-4 md:mt-2 mb-8 md:mb-0 relative z-50">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={handlePrev}
-            onMouseEnter={() => onHoverChange?.(true)}
-            onMouseLeave={() => onHoverChange?.(false)}
-            className="flex h-14 w-14 items-center justify-center rounded-full transition-all bg-[var(--space-gold)] text-black hover:brightness-110 shadow-[0_0_25px_rgba(255,215,0,0.5)]"
+    <section id="top" className="relative overflow-hidden pt-24 md:pt-28">
+      <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-16 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-6">
+        <div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--c-dim)]"
           >
-            <ChevronLeft className="h-6 w-6 stroke-[3]" />
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={handleNext}
-            onMouseEnter={() => onHoverChange?.(true)}
-            onMouseLeave={() => onHoverChange?.(false)}
-            className="flex h-14 w-14 items-center justify-center rounded-full transition-all bg-[var(--space-gold)] text-black hover:brightness-110 shadow-[0_0_25px_rgba(255,215,0,0.5)]"
-          >
-            <ChevronRight className="h-6 w-6 stroke-[3]" />
-          </motion.button>
+            <span className="flex items-center gap-2 text-[var(--c-cream)]">
+              <span className="animate-blink h-2 w-2 bg-[var(--c-red)]" />
+              Mission RT-01
+            </span>
+            <span>Status: Active</span>
+            <span>Open to opportunities</span>
+          </motion.div>
+
+          <h1 className="mt-6 font-black leading-[0.82]" aria-label={PROFILE.name}>
+            {["Raghav", "Tiwari"].map((word, w) => (
+              <span key={word} className="block overflow-hidden text-[clamp(4.5rem,14vw,10.5rem)]">
+                <motion.span
+                  className={`block ${w === 1 ? "text-transparent [-webkit-text-stroke:2px_var(--c-cream)]" : ""}`}
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.1 + w * 0.12, ease: [0.2, 0.8, 0.2, 1] }}
+                >
+                  {word}
+                </motion.span>
+              </span>
+            ))}
+          </h1>
+
+          <motion.div
+            className="stripes mt-5 h-6 origin-left"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 0.8, delay: 0.4, ease: [0.7, 0, 0.3, 1] }}
+            style={{ width: "min(100%, 26rem)" }}
+          />
+
+          <Reveal delay={0.3}>
+            <p className="mt-7 max-w-xl text-lg leading-relaxed text-[var(--c-cream)]/85 md:text-xl">
+              {PROFILE.role} building <span className="text-[var(--c-mustard)]">user-centric, AI-powered products</span> — LLM
+              workflows, RAG pipelines, backend APIs and data-driven applications.
+            </p>
+          </Reveal>
+
+          <Reveal delay={0.4}>
+            <dl className="mt-8 grid max-w-xl grid-cols-1 border-t border-[var(--c-line)] font-mono text-xs sm:grid-cols-2">
+              {rows.map(([k, v]) => (
+                <div key={k} className="flex flex-col gap-1 border-b border-[var(--c-line)] py-2.5 sm:odd:border-r sm:odd:pr-4 sm:even:pl-4">
+                  <dt className="label text-[10px]">{k}</dt>
+                  <dd className="uppercase tracking-wide">{v}</dd>
+                </div>
+              ))}
+            </dl>
+          </Reveal>
+
+          <Reveal delay={0.5}>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <ExtLink href={PROFILE.resume} className="btn btn-primary">
+                <FileText className="h-4 w-4" /> Resume
+              </ExtLink>
+              <ExtLink href={PROFILE.github}>
+                <Github className="h-4 w-4" /> GitHub
+              </ExtLink>
+              <ExtLink href={PROFILE.linkedin}>
+                <Linkedin className="h-4 w-4" /> LinkedIn
+              </ExtLink>
+              <ExtLink href={`mailto:${PROFILE.email}`}>
+                <Mail className="h-4 w-4" /> Email
+              </ExtLink>
+            </div>
+            <button onClick={onConsole} className="label mt-6 hidden hover:text-[var(--c-cream)] md:block">
+              Tip — press <kbd className="border border-[var(--c-line-strong)] px-1.5 text-[var(--c-mustard)]">/</kbd> to open
+              the command console
+            </button>
+          </Reveal>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="panel panel-corners p-4 sm:p-5"
+        >
+          <div className="mb-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--c-dim)]">
+            <span>Fig. 1 — Navigation chart</span>
+            <span>Scale 1:∞</span>
+          </div>
+          <OrbitNav />
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+function Ticker() {
+  const items = [
+    "Python",
+    "FastAPI",
+    "RAG pipelines",
+    "PostgreSQL · pgvector",
+    "LLM workflows",
+    "AI agents",
+    "1st — IndustrySolve 2025",
+    "Winner — RIFT'26",
+    "2 × published research",
+    "CGPA 9.77",
+    "React · D3.js",
+  ];
+  const row = (
+    <div className="flex shrink-0 items-center">
+      {items.map((t) => (
+        <span key={t} className="flex items-center gap-6 px-6 font-mono text-xs uppercase tracking-[0.18em]">
+          {t}
+          <span className="text-[var(--c-red)]">✦</span>
+        </span>
+      ))}
+    </div>
+  );
+  return (
+    <div className="overflow-hidden border-y border-[var(--c-cream)] bg-[var(--c-cream)] py-2.5 text-[var(--c-space)]" aria-hidden>
+      <div className="animate-marquee flex w-max">
+        {row}
+        {row}
+      </div>
+    </div>
+  );
+}
+
+/* ───────────────────────── 01 Brief ───────────────────────── */
+
+function Brief() {
+  return (
+    <Section id="brief">
+      <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
+        <Reveal>
+          <p className="text-2xl leading-snug md:text-[2rem] md:leading-[1.25]">
+            B.Tech Computer Science student focused on building{" "}
+            <mark className="bg-transparent text-[var(--c-mustard)] underline decoration-[var(--c-red)] decoration-2 underline-offset-4">
+              user-centric, AI-powered products
+            </mark>{" "}
+            and data-driven applications.
+          </p>
+          <p className="mt-6 max-w-2xl leading-relaxed text-[var(--c-dim)] md:text-lg">
+            Experienced in developing LLM-based workflows, RAG pipelines, backend APIs, and interactive visualization tools
+            using Python, FastAPI, and PostgreSQL. Interested in applied AI research, intelligent systems, and scalable
+            software engineering.
+          </p>
+        </Reveal>
+        <div className="grid grid-cols-2 gap-px self-start border border-[var(--c-line)] bg-[var(--c-line)]">
+          {STATS.map((s, i) => (
+            <Reveal key={s.label} delay={i * 0.08} className="bg-[var(--c-panel)] p-5">
+              <div className="label text-[10px]">RDG-0{i + 1}</div>
+              <div className="mt-2 font-display text-5xl font-black text-[var(--c-cream)] md:text-6xl">
+                <Counter value={s.value} decimals={s.decimals} />
+              </div>
+              <div className="mt-1 font-mono text-[11px] uppercase tracking-wider text-[var(--c-mustard)]">{s.label}</div>
+            </Reveal>
+          ))}
         </div>
       </div>
-      <div className="relative -mt-6 md:-mt-10 flex h-[650px] md:h-[480px] w-full items-center justify-center overflow-visible">
-        {projects.map((p, i) => {
-          const diff = (i - activeIdx + projects.length) % projects.length;
-          const isCenter = diff === 0;
-          const isRight = diff === 1;
-          const isLeft = diff === projects.length - 1;
+    </Section>
+  );
+}
 
-          if (!isCenter && !isRight && !isLeft && projects.length > 3) return null;
+/* ───────────────────────── 02 Skills ───────────────────────── */
 
-          const xOffset = isLeft ? "-55%" : isRight ? "55%" : "0%";
-          const zIndex = isCenter ? 20 : 10;
-          const scale = isCenter ? 1 : 0.85;
-          const opacity = isCenter ? 1 : 0.4;
-          const blur = isCenter ? 0 : 6;
+function Skills() {
+  const [idx, setIdx] = useState(0);
+  const cat = SKILLS[idx];
 
-          return (
-            <motion.article
-              key={p.name}
-              initial={false}
-              animate={{
-                x: xOffset,
-                scale,
-                zIndex,
-                opacity,
-                filter: `blur(${blur}px)`,
-              }}
-              transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
-              className="absolute w-[95%] md:w-[85%] max-w-2xl"
-              style={{ originX: 0.5, originY: 0.5, pointerEvents: isCenter ? "auto" : "none" }}
-            >
-              <div className={`glass group relative h-full overflow-hidden rounded-2xl p-7 transition-all duration-300 md:p-8 ${isCenter ? "border-white/20 shadow-[0_0_40px_rgba(0,0,0,0.3)]" : "border-white/5"}`}>
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <div className={`text-xs font-semibold uppercase tracking-wider ${accentColors[p.accent].text}`}>
-                      {p.tag}
-                    </div>
-                    <h3 className="mt-1.5 text-2xl font-bold md:text-3xl">{p.name}</h3>
-                  </div>
-                  <motion.a
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    href={p.github}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="glass inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition hover:bg-white/10"
+  return (
+    <Section id="skills">
+      <Reveal>
+        <div className="panel panel-corners grid md:grid-cols-[minmax(0,17rem)_1fr]">
+          {/* Selector switches */}
+          <div role="tablist" aria-label="Skill categories" className="border-b border-[var(--c-line)] md:border-r md:border-b-0">
+            <div className="label border-b border-[var(--c-line)] px-4 py-2.5 text-[10px]">Select module</div>
+            <div className="grid grid-cols-2 md:grid-cols-1">
+              {SKILLS.map((s, i) => {
+                const on = i === idx;
+                return (
+                  <button
+                    key={s.code}
+                    role="tab"
+                    aria-selected={on}
+                    onClick={() => setIdx(i)}
+                    className={`flex items-center gap-3 border-b border-[var(--c-line)] px-4 py-3 text-left transition-colors ${
+                      on ? "bg-[var(--c-cream)] text-[var(--c-space)]" : "hover:bg-[var(--c-panel-2)]"
+                    }`}
                   >
-                    <Github className="h-3.5 w-3.5" />
-                    Github
-                    <ExternalLink className="h-3 w-3" />
-                  </motion.a>
+                    <span
+                      className={`h-2.5 w-2.5 shrink-0 border ${
+                        on ? "border-[var(--c-red)] bg-[var(--c-red)]" : "border-[var(--c-line-strong)]"
+                      }`}
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className={`block font-mono text-[10px] ${on ? "text-[var(--c-red)]" : "text-[var(--c-dim)]"}`}>{s.code}</span>
+                      <span className="block text-sm font-medium leading-snug">{s.title}</span>
+                    </span>
+                    <span className="hidden font-mono text-[10px] opacity-60 sm:inline">{String(s.items.length).padStart(2, "0")}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* CRT readout */}
+          <div className="p-4 sm:p-6">
+            <div className="crt min-h-[20rem] p-5 text-sm sm:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] uppercase tracking-[0.18em] opacity-70">
+                <span>&gt; load module {cat.code.toLowerCase()}</span>
+                <span>{cat.items.length} units online</span>
+              </div>
+              <AnimatePresence mode="wait">
+                <motion.div key={cat.code} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.12 }}>
+                  <div className="mt-4 font-display text-4xl font-extrabold uppercase text-[var(--c-phosphor)] sm:text-5xl">
+                    {cat.title}
+                  </div>
+                  <ul className="mt-6 grid gap-x-8 gap-y-2 sm:grid-cols-2">
+                    {cat.items.map((item, i) => (
+                      <motion.li
+                        key={item}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.05 + i * 0.06, duration: 0 }}
+                        className="flex items-baseline gap-3"
+                      >
+                        <span className="text-[11px] opacity-60">[OK]</span>
+                        <span>{item}</span>
+                        <span className="flex-1 translate-y-[-3px] border-b border-dotted border-current opacity-20" />
+                        <span className="text-[11px] opacity-50">{String(i + 1).padStart(2, "0")}</span>
+                      </motion.li>
+                    ))}
+                  </ul>
+                  <div className="mt-6 text-[11px] opacity-60">
+                    &gt; ready<span className="animate-blink">_</span>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+      </Reveal>
+    </Section>
+  );
+}
+
+/* ───────────────────────── 03 Flight log ───────────────────────── */
+
+function FlightLog() {
+  return (
+    <Section id="log">
+      <ol className="relative space-y-8 border-l border-[var(--c-line-strong)] pl-6 md:pl-0 md:border-l-0">
+        {EXPERIENCE.map((e, i) => (
+          <Reveal key={e.org} delay={i * 0.08}>
+            <li className="relative grid gap-4 md:grid-cols-[12rem_1fr] md:gap-8">
+              <span
+                className={`absolute -left-[31px] top-1.5 h-3 w-3 border-2 md:hidden ${
+                  e.active ? "border-[var(--c-red)] bg-[var(--c-red)]" : "border-[var(--c-line-strong)] bg-[var(--c-space)]"
+                }`}
+              />
+              <div className="font-mono text-xs uppercase tracking-wider md:pt-6 md:text-right">
+                <div className="text-[var(--c-dim)]">LOG-{String(EXPERIENCE.length - i).padStart(3, "0")}</div>
+                <div className="mt-1 text-[var(--c-cream)]">
+                  {e.start} → {e.end}
                 </div>
-                <div className="mt-1 text-xs text-muted-foreground">{p.date}</div>
-                <div className="mt-4 flex flex-wrap gap-1.5">
+                <div
+                  className={`mt-2 inline-block px-1.5 py-0.5 text-[10px] font-semibold ${
+                    e.active ? "bg-[var(--c-red)] text-[var(--c-space)]" : "border border-[var(--c-line-strong)] text-[var(--c-dim)]"
+                  }`}
+                >
+                  {e.active ? "● In flight" : "Mission complete"}
+                </div>
+              </div>
+              <article className="panel group p-6 transition-[transform,box-shadow] duration-200 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[6px_6px_0_var(--c-line-strong)] md:p-8">
+                <div className="label text-[10px]">
+                  {e.org} · {e.place}
+                </div>
+                <h3 className="mt-2 text-3xl font-extrabold md:text-4xl">{e.role}</h3>
+                <ul className="mt-5 space-y-3 text-[15px] leading-relaxed text-[var(--c-cream)]/80">
+                  {e.points.map((p, j) => (
+                    <li key={p} className="grid grid-cols-[2.25rem_1fr]">
+                      <span className="font-mono text-[11px] leading-[1.9] text-[var(--c-mustard)]">{String(j + 1).padStart(2, "0")}</span>
+                      <span>{p}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {e.tags.map((t) => (
+                    <span key={t} className="chip">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </article>
+            </li>
+          </Reveal>
+        ))}
+      </ol>
+    </Section>
+  );
+}
+
+/* ───────────────────────── 04 Missions ───────────────────────── */
+
+function Missions() {
+  const [idx, setIdx] = useState(0);
+  const [dir, setDir] = useState(1);
+  const p = PROJECTS[idx];
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  const select = (i: number, focus = false) => {
+    const next = (i + PROJECTS.length) % PROJECTS.length;
+    setDir(next > idx || (idx === PROJECTS.length - 1 && next === 0) ? 1 : -1);
+    setIdx(next);
+    if (focus) tabRefs.current[next]?.focus();
+  };
+
+  return (
+    <Section id="missions">
+      <Reveal>
+        {/* Folder tabs */}
+        <div
+          role="tablist"
+          aria-label="Projects"
+          className="flex gap-1 overflow-x-auto"
+          onKeyDown={(e) => {
+            if (e.key === "ArrowRight") select(idx + 1, true);
+            if (e.key === "ArrowLeft") select(idx - 1, true);
+          }}
+        >
+          {PROJECTS.map((proj, i) => {
+            const on = i === idx;
+            return (
+              <button
+                key={proj.id}
+                ref={(el) => void (tabRefs.current[i] = el)}
+                role="tab"
+                aria-selected={on}
+                aria-controls="mission-panel"
+                tabIndex={on ? 0 : -1}
+                onClick={() => select(i)}
+                className={`shrink-0 border border-b-0 px-4 py-2.5 text-left transition-colors ${
+                  on
+                    ? "border-[var(--c-cream)] bg-[var(--c-cream)] text-[var(--c-space)]"
+                    : "border-[var(--c-line)] bg-[var(--c-panel)] text-[var(--c-dim)] hover:text-[var(--c-cream)]"
+                }`}
+              >
+                <span className={`block font-mono text-[10px] ${on ? "text-[var(--c-red)]" : ""}`}>{proj.designation}</span>
+                <span className="block font-display text-lg font-extrabold uppercase leading-tight">{proj.name}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div id="mission-panel" role="tabpanel" className="panel overflow-hidden border-t-2 border-t-[var(--c-cream)]">
+          <AnimatePresence mode="wait" custom={dir} initial={false}>
+            <motion.div
+              key={p.id}
+              custom={dir}
+              initial={{ opacity: 0, x: dir * 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: dir * -40 }}
+              transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
+              className="grid gap-8 p-6 md:grid-cols-[15rem_1fr] md:p-10"
+            >
+              <div className="flex flex-col items-center gap-5 md:items-start">
+                <MissionPatch
+                  ringText={`${p.name} · ${p.designation}`}
+                  center={p.designation.split("-")[0]}
+                  color={p.color}
+                  footer={p.date.split(" – ").pop()}
+                  spin
+                  className="w-44 md:w-full"
+                />
+                <dl className="w-full font-mono text-xs">
+                  {[
+                    ["Window", p.date],
+                    ["Class", p.tag],
+                  ].map(([k, v]) => (
+                    <div key={k} className="flex justify-between gap-3 border-b border-[var(--c-line)] py-2">
+                      <dt className="text-[var(--c-dim)] uppercase">{k}</dt>
+                      <dd className="text-right">{v}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+
+              <div>
+                <div className="label text-[10px]" style={{ color: p.color }}>
+                  Mission file · {p.designation}
+                </div>
+                <h3 className="mt-2 text-5xl font-black md:text-7xl">{p.name}</h3>
+                <ol className="mt-6 space-y-3.5 text-[15px] leading-relaxed text-[var(--c-cream)]/80">
+                  {p.points.map((pt, j) => (
+                    <li key={pt} className="grid grid-cols-[3.5rem_1fr]">
+                      <span className="font-mono text-[11px] leading-[1.9] text-[var(--c-mustard)]">OBJ-{String(j + 1).padStart(2, "0")}</span>
+                      <span>{pt}</span>
+                    </li>
+                  ))}
+                </ol>
+                <div className="mt-7 flex flex-wrap gap-2">
                   {p.stack.map((s) => (
-                    <span key={s} className="rounded-md border border-white/10 bg-white/[0.03] px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                    <span key={s} className="chip">
                       {s}
                     </span>
                   ))}
                 </div>
-                <ul className="mt-5 space-y-2 text-sm text-muted-foreground">
-                  {p.points.map((pt, idx) => (
-                    <li key={idx} className="flex gap-2.5">
-                      <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${accentColors[p.accent].bg}`} />
-                      <span>{pt}</span>
-                    </li>
-                  ))}
-                </ul>
+                <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-[var(--c-line)] pt-6">
+                  <ExtLink href={p.github} className="btn btn-primary">
+                    <Github className="h-4 w-4" /> View source <ArrowUpRight className="h-3.5 w-3.5" />
+                  </ExtLink>
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-xs tabular-nums text-[var(--c-dim)]">
+                      {String(idx + 1).padStart(2, "0")} / {String(PROJECTS.length).padStart(2, "0")}
+                    </span>
+                    <button onClick={() => select(idx - 1)} className="btn px-2.5" aria-label="Previous project">
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => select(idx + 1)} className="btn px-2.5" aria-label="Next project">
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
               </div>
-            </motion.article>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-function Achievements() {
-  const [idx, setIdx] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    setMousePos({ x: e.clientX, y: e.clientY });
-  };
-
-  const accentColorMap: Record<string, string> = {
-    gold: "text-[var(--space-gold)]",
-    purple: "text-[var(--space-purple)]",
-    cyan: "text-[var(--space-cyan)]",
-  };
-
-  const proofMap: Record<number, string> = {
-    0: "/proofs/iiit delhi proof.jpeg",
-    1: "/proofs/RIFT26-Certificate-Raghav-Tiwari.jpg",
-    2: "",
-    3: "",
-  };
-
-  const currentProof = proofMap[idx];
-
-  return (
-    <section className="mt-32">
-      <SectionHeading id="achievements" kicker="05" title="ACHIEVEMENTS" />
-      <Reveal>
-        <motion.div 
-          className="glass relative rounded-2xl p-8 md:p-10 hover-lift"
-          whileHover={{ scale: 1.01 }}
-          transition={{ type: "spring", stiffness: 200 }}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          onMouseMove={handleMouseMove}
-        >
-          <Trophy className={`absolute right-8 top-8 h-8 w-8 ${accentColorMap[ACHIEVEMENTS[idx].accent]}`} />
-          <motion.div
-            key={idx}
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -30 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="pr-12"
-          >
-            <div className={`text-xs font-semibold uppercase tracking-wider ${accentColorMap[ACHIEVEMENTS[idx].accent]}`}>
-              {ACHIEVEMENTS[idx].sub}
-            </div>
-            <h3 className="mt-2 text-2xl font-bold md:text-3xl">{ACHIEVEMENTS[idx].title}</h3>
-            <p className="mt-4 text-muted-foreground md:text-lg leading-relaxed">{ACHIEVEMENTS[idx].body}</p>
-          </motion.div>
-          <div className="mt-8 flex items-center justify-between">
-            <div className="flex gap-2">
-              {ACHIEVEMENTS.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setIdx(i)}
-                  className={`h-2 rounded-full transition-all duration-300 ${i === idx ? "w-8 bg-[var(--space-gold)]" : "w-2 bg-white/20 hover:bg-white/40"}`}
-                  aria-label={`Achievement ${i + 1}`}
-                />
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setIdx((idx - 1 + ACHIEVEMENTS.length) % ACHIEVEMENTS.length)}
-                className="glass rounded-full p-2.5 transition hover:bg-white/10"
-                aria-label="Previous"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setIdx((idx + 1) % ACHIEVEMENTS.length)}
-                className="glass rounded-full p-2.5 transition hover:bg-white/10"
-                aria-label="Next"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </motion.button>
-            </div>
-          </div>
-        </motion.div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </Reveal>
-      
-      <AnimatePresence>
-        {isHovered && currentProof && (
-          <motion.img
-            initial={{ opacity: 0, scale: 0.8, x: "-50%" }}
-            animate={{ opacity: 1, scale: 1, x: "-50%" }}
-            exit={{ opacity: 0, scale: 0.8, x: "-50%" }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            src={currentProof}
-            alt="Achievement Proof"
-            className="fixed z-[100] rounded-xl shadow-2xl object-cover pointer-events-none border border-white/10"
-            style={{
-              width: "400px",
-              left: mousePos.x,
-              top: mousePos.y + 20,
-            }}
-          />
-        )}
-      </AnimatePresence>
-    </section>
+    </Section>
   );
 }
 
-function Publications() {
-  const pubs = [
-    {
-      venue: "Springer Proceedings in Energy",
-      title: "GreenShield – A Natural Language Processing Based Approach to Prevent Greenwashing and Attain Decarbonization",
-      authors: "Raghav T., Adithya V., Dr. Nidhi S., Dr. Mudita N. (2025)",
-      desc: "Proposes an NLP-driven AI framework to detect corporate greenwashing by analyzing sustainability reports and advertisements, enhancing transparency, consumer trust, and decarbonization efforts.",
-      url: "https://doi.org/10.1007/978-981-96-4492-6_6",
-    },
-    {
-      venue: "Taylor & Francis",
-      title: "How GenAI Is Replacing Humans: Myth or Real. Ethical Considerations in AI: Bias and Fairness in Generative Models",
-      authors: "Raghav T., Adithya V., Prachi S., Dr. Deepika B. (2025)",
-      desc: "Explores the evolution and societal impact of Generative AI on human labor, analyzing automation's history and ethical challenges related to bias, fairness, and job displacement across industries.",
-      url: "https://doi.org/10.1201/9781003565703-3",
-    },
-  ];
+/* ───────────────────────── 05 Awards ───────────────────────── */
+
+function Awards() {
+  const [open, setOpen] = useState<number | null>(null);
+  const a = open !== null ? ACHIEVEMENTS[open] : null;
+
+  useEffect(() => {
+    if (open === null) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(null);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   return (
-    <section className="mt-32">
-      <SectionHeading id="publications" kicker="06" title="PUBLICATIONS" />
-      <div className="grid gap-5 md:grid-cols-2">
-        {pubs.map((p, i) => (
-          <Reveal key={p.url} delay={i * 0.1}>
-            <motion.a
-              whileHover={{ y: -6, scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 200 }}
-              href={p.url}
-              target="_blank"
-              rel="noreferrer"
-              className="glass group block h-full rounded-2xl p-7 transition-all hover:border-[var(--space-cyan)]/40 hover:shadow-[0_0_40px_rgba(100,200,255,0.15)]"
+    <Section id="awards">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {ACHIEVEMENTS.map((ach, i) => (
+          <Reveal key={ach.title} delay={i * 0.07}>
+            <button
+              onClick={() => setOpen(i)}
+              className="panel group flex h-full w-full flex-col items-center p-6 text-center transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-[0_6px_0_var(--c-mustard)]"
+              aria-haspopup="dialog"
             >
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--space-cyan)]">
-                <BookOpen className="h-3.5 w-3.5" />
-                {p.venue}
-              </div>
-              <h3 className="mt-3 text-lg font-bold leading-snug">{p.title}</h3>
-              <div className="mt-2 text-xs text-muted-foreground">{p.authors}</div>
-              <p className="mt-4 text-sm text-muted-foreground">{p.desc}</p>
-              <div className="mt-5 inline-flex items-center gap-1.5 text-xs font-medium text-[var(--space-cyan)] transition group-hover:gap-2.5">
-                Read paper <ExternalLink className="h-3 w-3" />
-              </div>
-            </motion.a>
+              <MissionPatch
+                ringText={ach.title.split(" — ")[0]}
+                center={ach.rank}
+                color={ach.color}
+                footer={ach.year}
+                className="w-36 transition-transform duration-500 group-hover:rotate-[8deg]"
+              />
+              <h3 className="mt-5 text-2xl font-extrabold">{ach.title}</h3>
+              <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-[var(--c-dim)]">{ach.sub}</p>
+              <span className="label mt-auto pt-5 text-[10px] text-[var(--c-mustard)] opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                Open dossier ▸
+              </span>
+            </button>
           </Reveal>
         ))}
       </div>
-    </section>
+
+      <AnimatePresence>
+        {a && (
+          <motion.div
+            className="fixed inset-0 z-[150] flex items-center justify-center bg-[var(--c-space)]/90 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onMouseDown={(e) => e.target === e.currentTarget && setOpen(null)}
+            data-lenis-prevent
+          >
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="award-title"
+              className="panel max-h-[90vh] w-full max-w-3xl overflow-y-auto border-[var(--c-cream)] shadow-[8px_8px_0_var(--c-red)]"
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 30, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+            >
+              <div className="flex items-center justify-between border-b border-[var(--c-line)] px-5 py-3">
+                <span className="label text-[10px]">Commendation dossier · {a.year}</span>
+                <button onClick={() => setOpen(null)} aria-label="Close" className="p-1 hover:text-[var(--c-red)]" autoFocus>
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="grid gap-6 p-6 sm:grid-cols-[9rem_1fr] md:p-8">
+                <MissionPatch ringText={a.title.split(" — ")[0]} center={a.rank} color={a.color} footer={a.year} className="mx-auto w-32 sm:w-full" />
+                <div>
+                  <div className="font-mono text-[11px] uppercase tracking-wider" style={{ color: a.color }}>
+                    {a.sub}
+                  </div>
+                  <h3 id="award-title" className="mt-2 text-4xl font-black">
+                    {a.title}
+                  </h3>
+                  <p className="mt-4 leading-relaxed text-[var(--c-cream)]/80">{a.body}</p>
+                </div>
+              </div>
+              {a.proof && (
+                <figure className="border-t border-[var(--c-line)] p-6 md:p-8">
+                  <figcaption className="label mb-3 text-[10px]">Exhibit A — certificate</figcaption>
+                  <img src={a.proof} alt={`${a.title} certificate`} className="w-full border border-[var(--c-line)]" loading="lazy" />
+                </figure>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </Section>
   );
 }
 
-function Education() {
+/* ───────────────────────── 06 Papers ───────────────────────── */
+
+function Papers() {
   return (
-    <section className="mt-32">
-      <SectionHeading id="education" kicker="07" title="EDUCATION" />
-      <div className="grid gap-5 md:grid-cols-3">
-        <Reveal>
-          <motion.div 
-            whileHover={{ y: -6, scale: 1.01 }}
-            transition={{ type: "spring", stiffness: 200 }}
-            className="glass relative h-full overflow-hidden rounded-2xl p-7 md:col-span-1 hover:shadow-[0_0_40px_rgba(100,200,255,0.15)]"
-          >
-            <GraduationCap className="h-7 w-7 text-[var(--space-cyan)]" />
-            <div className="mt-4 text-xs uppercase tracking-wider text-muted-foreground">B.Tech · Computer Science</div>
-            <h3 className="mt-1 text-lg font-bold">Guru Gobind Singh Indraprastha University</h3>
-            <div className="mt-1 text-xs text-muted-foreground">New Delhi, India · Aug 2023 – Aug 2027</div>
-            <div className="mt-5 flex items-baseline gap-2">
-              <motion.div 
-                className="text-4xl font-bold text-[var(--space-cyan)]"
-                initial={{ scale: 0 }}
-                whileInView={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 200 }}
-              >
-                9.77
-              </motion.div>
-              <div className="text-sm text-muted-foreground">/ 10 CGPA</div>
-            </div>
-          </motion.div>
-        </Reveal>
-        <Reveal delay={0.1}>
-          <motion.div 
-            whileHover={{ y: -6, scale: 1.01 }}
-            transition={{ type: "spring", stiffness: 200 }}
-            className="glass h-full rounded-2xl p-7 hover:shadow-[0_0_40px_rgba(150,100,255,0.15)]"
-          >
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">Class XII — CBSE</div>
-            <h3 className="mt-1 text-lg font-bold">Father Agnel School</h3>
-            <div className="mt-1 text-xs text-muted-foreground">NOIDA, India · 2022</div>
-            <motion.div 
-              className="mt-5 text-4xl font-bold text-[var(--space-purple)]"
-              initial={{ scale: 0 }}
-              whileInView={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 200 }}
+    <Section id="papers">
+      <div className="space-y-6">
+        {PUBLICATIONS.map((p, i) => (
+          <Reveal key={p.doi} delay={i * 0.08}>
+            <a
+              href={`https://doi.org/${p.doi}`}
+              target="_blank"
+              rel="noreferrer"
+              className="group grid bg-[var(--c-cream)] text-[var(--c-space)] shadow-[6px_6px_0_var(--c-line-strong)] transition-[transform,box-shadow] duration-200 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[10px_10px_0_var(--c-red)] md:grid-cols-[9rem_1fr_auto]"
             >
-              94<span className="text-2xl text-muted-foreground">%</span>
-            </motion.div>
-          </motion.div>
-        </Reveal>
-        <Reveal delay={0.2}>
-          <motion.div 
-            whileHover={{ y: -6, scale: 1.01 }}
-            transition={{ type: "spring", stiffness: 200 }}
-            className="glass h-full rounded-2xl p-7 hover:shadow-[0_0_40px_rgba(255,200,100,0.15)]"
-          >
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">Class X — CBSE</div>
-            <h3 className="mt-1 text-lg font-bold">Father Agnel School</h3>
-            <div className="mt-1 text-xs text-muted-foreground">NOIDA, India · 2020</div>
-            <motion.div 
-              className="mt-5 text-4xl font-bold text-[var(--space-gold)]"
-              initial={{ scale: 0 }}
-              whileInView={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 200 }}
-            >
-              95<span className="text-2xl text-muted-foreground">%</span>
-            </motion.div>
-          </motion.div>
-        </Reveal>
+              <div className="flex items-center justify-between border-b-2 border-[var(--c-space)] p-5 md:flex-col md:items-start md:border-r-2 md:border-b-0">
+                <span className="font-display text-4xl font-black">TX-0{i + 1}</span>
+                <span className="font-mono text-xs">{p.year}</span>
+              </div>
+              <div className="p-5 md:p-7">
+                <div className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[var(--c-red)]">
+                  {p.publisher} — {p.venue}
+                </div>
+                <h3 className="mt-2 text-2xl font-extrabold md:text-3xl">{p.title}</h3>
+                <p className="mt-2 font-mono text-xs opacity-70">{p.authors}</p>
+                <p className="mt-4 max-w-2xl text-[15px] leading-relaxed opacity-85">{p.desc}</p>
+                <p className="mt-4 font-mono text-[11px] opacity-60">DOI {p.doi}</p>
+              </div>
+              <div className="flex items-center justify-end border-t-2 border-[var(--c-space)] p-5 md:border-t-0 md:border-l-2">
+                <span className="flex items-center gap-1 font-mono text-xs font-semibold uppercase tracking-wider">
+                  Read
+                  <ArrowUpRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </span>
+              </div>
+            </a>
+          </Reveal>
+        ))}
       </div>
-    </section>
+    </Section>
   );
 }
 
-function Certifications() {
+/* ───────────────────────── 07 Training ───────────────────────── */
+
+function Training() {
   return (
-    <section className="mt-32">
-      <SectionHeading id="certifications" kicker="08" title="CERTIFICATIONS & PORTFOLIO" />
-      <div className="grid gap-5 md:grid-cols-2">
-        <Reveal>
-          <motion.div 
-            whileHover={{ y: -6, scale: 1.01 }}
-            transition={{ type: "spring", stiffness: 200 }}
-            className="glass h-full rounded-2xl p-7 hover:shadow-[0_0_40px_rgba(100,200,255,0.15)]"
-          >
-            <Award className="h-6 w-6 text-[var(--space-cyan)]" />
-            <h3 className="mt-4 text-lg font-bold">Graphic Design Masterclass</h3>
-            <div className="mt-1 text-xs text-muted-foreground">Udemy · Issued May 2025</div>
-          </motion.div>
-        </Reveal>
-        <Reveal delay={0.1}>
-          <motion.a
-            whileHover={{ y: -6, scale: 1.01 }}
-            transition={{ type: "spring", stiffness: 200 }}
-            href="https://tinyurl.com/raghavtiwariportfolio"
-            target="_blank"
-            rel="noreferrer"
-            className="glass group relative block h-full overflow-hidden rounded-2xl p-7 transition-all hover:border-[var(--space-purple)]/50 hover:shadow-[0_0_40px_rgba(150,100,255,0.15)]"
-          >
-            <div className="relative">
-              <Sparkles className="h-6 w-6 text-[var(--space-purple)]" />
-              <h3 className="mt-4 text-lg font-bold">Design Portfolio</h3>
-              <div className="mt-1 text-xs text-muted-foreground">Visual identity, branding & typography work</div>
-              <div className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-[var(--space-purple)]">
-                Open portfolio <ArrowUpRight className="h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+    <Section id="training">
+      <Reveal>
+        <div className="panel">
+          <div className="hidden grid-cols-[1fr_12rem_10rem] border-b border-[var(--c-line)] px-6 py-2.5 md:grid">
+            <span className="label text-[10px]">Institution</span>
+            <span className="label text-[10px]">Period</span>
+            <span className="label text-right text-[10px]">Score</span>
+          </div>
+          {EDUCATION.map((e, i) => (
+            <div
+              key={e.program}
+              className="group grid gap-2 border-b border-[var(--c-line)] px-6 py-6 transition-colors last:border-b-0 hover:bg-[var(--c-panel-2)] md:grid-cols-[1fr_12rem_10rem] md:items-center md:gap-4"
+            >
+              <div>
+                <div className="font-mono text-[11px] uppercase tracking-wider text-[var(--c-mustard)]">{e.program}</div>
+                <h3 className="mt-1.5 text-2xl font-extrabold md:text-3xl">{e.school}</h3>
+                <div className="mt-1 text-sm text-[var(--c-dim)]">{e.place}</div>
+              </div>
+              <div className="font-mono text-xs uppercase text-[var(--c-dim)]">{e.period}</div>
+              <div className="flex items-baseline gap-1.5 md:justify-end">
+                <span className={`font-display text-5xl font-black ${i === 0 ? "text-[var(--c-red)]" : ""}`}>{e.score}</span>
+                <span className="font-mono text-xs text-[var(--c-dim)]">{e.unit}</span>
               </div>
             </div>
-          </motion.a>
-        </Reveal>
-      </div>
-    </section>
+          ))}
+        </div>
+      </Reveal>
+    </Section>
+  );
+}
+
+/* ───────────────────────── 08 Comms ───────────────────────── */
+
+function Comms() {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard?.writeText(PROFILE.email).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    });
+  };
+
+  const links = [
+    { label: "GitHub", sub: "@RaghavTiwari31", href: PROFILE.github, icon: Github },
+    { label: "LinkedIn", sub: "raghav-tiwari", href: PROFILE.linkedin, icon: Linkedin },
+    { label: "Resume", sub: "PDF · 2 pages", href: PROFILE.resume, icon: FileText },
+    { label: "Design work", sub: "Branding & layout", href: PROFILE.designPortfolio, icon: ArrowUpRight },
+  ];
+
+  return (
+    <Section id="comms">
+      <Reveal>
+        <div className="panel panel-corners overflow-hidden">
+          <div className="p-6 md:p-12">
+            <div className="label text-[10px]">Channel open · awaiting transmission</div>
+            <p className="mt-4 max-w-3xl font-display text-4xl font-black uppercase leading-[0.95] md:text-7xl">
+              Let's build something <span className="text-[var(--c-mustard)]">worth launching.</span>
+            </p>
+            <p className="mt-6 max-w-xl text-[var(--c-dim)] md:text-lg">
+              Open to internships, research collaborations and ambitious AI products. The fastest route is email.
+            </p>
+
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-stretch">
+              <a
+                href={`mailto:${PROFILE.email}`}
+                className="btn btn-primary justify-center text-sm normal-case tracking-normal sm:text-base"
+              >
+                <Mail className="h-4 w-4" /> {PROFILE.email}
+              </a>
+              <button onClick={copy} className="btn justify-center" aria-live="polite">
+                <Copy className="h-4 w-4" /> {copied ? "Copied ✓" : "Copy"}
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 border-t border-[var(--c-line)] md:grid-cols-4">
+            {links.map((l) => (
+              <ExtLink
+                key={l.label}
+                href={l.href}
+                className="group flex items-center justify-between gap-3 border-[var(--c-line)] p-5 transition-colors odd:border-r hover:bg-[var(--c-cream)] hover:text-[var(--c-space)] md:border-r md:last:border-r-0 [&:nth-child(-n+2)]:border-b md:[&:nth-child(-n+2)]:border-b-0"
+              >
+                <span>
+                  <span className="block font-display text-2xl font-extrabold uppercase">{l.label}</span>
+                  <span className="block font-mono text-[11px] opacity-60">{l.sub}</span>
+                </span>
+                <l.icon className="h-5 w-5 shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </ExtLink>
+            ))}
+          </div>
+          <div className="stripes h-8" />
+        </div>
+      </Reveal>
+    </Section>
   );
 }
 
 function Footer() {
   return (
-    <footer className="relative border-t border-white/5 px-6 py-10 mt-20">
-      <div className="section-divider absolute top-0 left-0 right-0" />
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-sm text-muted-foreground md:flex-row">
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          Built for the Future by <span className="text-foreground font-medium">Raghav Tiwari</span>.
-        </motion.div>
-        <motion.a 
-          href={`mailto:${EMAIL}`} 
-          className="inline-flex items-center gap-2 transition hover:text-[var(--space-gold)]"
-          whileHover={{ scale: 1.05 }}
-        >
-          <Mail className="h-4 w-4" /> {EMAIL}
-        </motion.a>
+    <footer className="mt-28 border-t border-[var(--c-line)]">
+      <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-4 px-4 py-8 font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--c-dim)] sm:px-6 md:flex-row md:items-center">
+        <span>
+          End of transmission · © {new Date().getFullYear()} {PROFILE.name}
+        </span>
+        <button onClick={() => goTo("top")} className="flex items-center gap-2 text-[var(--c-cream)] hover:text-[var(--c-mustard)]">
+          ▲ Return to launch pad
+        </button>
       </div>
     </footer>
   );

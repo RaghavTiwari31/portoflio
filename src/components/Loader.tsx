@@ -1,181 +1,286 @@
-import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { motion, useReducedMotion } from "framer-motion";
+import { useEffect, useState } from "react";
 
-const generatePoints = () => {
-  const pts: {x: number, y: number, dispX: number, dispY: number, isBg?: boolean, color?: string}[] = [];
-  const addPt = (x: number, y: number) => {
-    // Jitter for organic star look
-    const jx = x + (Math.random() - 0.5) * 4;
-    const jy = y + (Math.random() - 0.5) * 4;
-    
-    // Dispersion target
-    const angle = Math.random() * Math.PI * 2;
-    const dist = Math.random() * 300 + 50; 
-    const dispX = 200 + Math.cos(angle) * dist;
-    const dispY = 100 + Math.sin(angle) * dist;
+/* ───────────── RV constellation geometry (viewBox 400 × 200) ───────────── */
 
-    pts.push({ x: jx, y: jy, dispX, dispY, color: "#e2f1ff" });
-  };
-  
-  // R
-  for (let y = 40; y <= 160; y += 8) addPt(120, y); // Stem
-  for (let x = 120; x <= 160; x += 8) addPt(x, 40); // Top bar
-  for (let a = -Math.PI / 2; a <= Math.PI / 2; a += Math.PI / 8) { // Loop
-    addPt(160 + Math.cos(a) * 30, 70 + Math.sin(a) * 30);
+const CX = 200;
+const CY = 100;
+
+// Anchor stars of the "R" and "V", joined by constellation lines.
+const ANCHORS: [number, number][] = [
+  [120, 160], // 0  R foot
+  [120, 100], // 1  R waist
+  [120, 40], //  2  R top
+  [158, 40], //  3  R bowl top
+  [186, 54], //  4
+  [190, 72], //  5  R bowl edge
+  [184, 90], //  6
+  [158, 100], // 7  R bowl bottom
+  [184, 160], // 8  R leg foot
+  [222, 40], //  9  V left top
+  [262, 160], // 10 V point
+  [302, 40], //  11 V right top
+];
+const EDGES: [number, number][] = [
+  [0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 1], [7, 8],
+  [9, 10], [10, 11],
+];
+
+type Pt = { x: number; y: number; dx: number; dy: number; size: number; delay: number; color: string };
+
+const rand = (a: number, b: number) => a + Math.random() * (b - a);
+
+/** Point flung outward from the centre, used for the disperse phase. */
+function flingFrom(x: number, y: number, min: number, max: number) {
+  const a = Math.atan2(y - CY, x - CX) + rand(-0.25, 0.25);
+  const d = rand(min, max);
+  return { dx: CX + Math.cos(a) * d, dy: CY + Math.sin(a) * d };
+}
+
+function buildStars() {
+  const letter: Pt[] = [];
+  // Filler stars along each edge
+  for (const [a, b] of EDGES) {
+    const [x1, y1] = ANCHORS[a];
+    const [x2, y2] = ANCHORS[b];
+    const steps = Math.max(1, Math.round(Math.hypot(x2 - x1, y2 - y1) / 11));
+    for (let i = 1; i < steps; i++) {
+      const x = x1 + ((x2 - x1) * i) / steps + rand(-1.5, 1.5);
+      const y = y1 + ((y2 - y1) * i) / steps + rand(-1.5, 1.5);
+      letter.push({ x, y, ...flingFrom(x, y, 320, 520), size: 2, delay: rand(0, 0.45), color: "var(--c-cream)" });
+    }
   }
-  for (let x = 120; x <= 160; x += 8) addPt(x, 100); // Middle bar
-  for (let i = 0; i <= 60; i += 8) addPt(120 + i, 100 + i); // Leg
+  const anchors: Pt[] = ANCHORS.map(([x, y], i) => ({
+    x,
+    y,
+    ...flingFrom(x, y, 360, 560),
+    size: 4,
+    delay: 0.1 + i * 0.03,
+    color: i === 10 || i === 2 ? "var(--c-red)" : i % 3 === 0 ? "var(--c-mustard)" : "var(--c-cream)",
+  }));
+  const field: Pt[] = Array.from({ length: 110 }, () => {
+    const a = rand(0, Math.PI * 2);
+    const d = rand(30, 340);
+    const x = CX + Math.cos(a) * d;
+    const y = CY + Math.sin(a) * d * 0.7;
+    const palette = ["var(--c-cream)", "var(--c-cream)", "var(--c-mustard)", "var(--c-teal)", "var(--c-orange)"];
+    return { x, y, ...flingFrom(x, y, d + 200, d + 420), size: Math.random() < 0.2 ? 2 : 1, delay: rand(0, 0.6), color: palette[Math.floor(rand(0, palette.length))] };
+  });
+  return { letter, anchors, field };
+}
 
-  // V
-  for (let i = 0; i <= 120; i += 8) {
-    addPt(220 + i * (40/120), 40 + i); // Left diagonal
-    addPt(300 - i * (40/120), 40 + i); // Right diagonal
-  }
+const STARS = buildStars();
 
-  // Realistic Starfield for Background
-  const starColors = ["#ffffff", "#f0f8ff", "#fffacd", "#add8e6", "#ffd700"];
-  for (let i = 0; i < 150; i++) { // Decreased count for realism and performance
-    const angle = Math.random() * Math.PI * 2;
-    const dist = Math.random() * 250 + 10;
-    
-    const dispDist = dist + Math.random() * 150;
+const BOOT_LINES = [
+  "RT-OS v27.0 // FLIGHT COMPUTER",
+  "PLOTTING CONSTELLATION RV ... OK",
+  "LOADING MISSION FILES ....... OK",
+  "TELEMETRY LINK .............. OK",
+  "ALL SYSTEMS NOMINAL",
+];
 
-    pts.push({
-      x: 200 + Math.cos(angle) * dist,
-      y: 100 + Math.sin(angle) * dist,
-      dispX: 200 + Math.cos(angle) * dispDist, // disperse radially
-      dispY: 100 + Math.sin(angle) * dispDist,
-      isBg: true,
-      color: starColors[Math.floor(Math.random() * starColors.length)]
-    });
-  }
+// Timeline (ms)
+const T_FORM = 600; //     stars fly out from the seed star into "RV"
+const T_LINES = 1700; //   constellation lines draw in
+const T_COUNT = 2100; //   countdown 03 → GO
+const T_DISPERSE = 3300; // stars scatter outward
+const T_DONE = 4100; //    hand off to the site
 
-  return pts;
-};
+type Phase = "seed" | "form" | "disperse";
 
-const POINTS = generatePoints();
-
+/** Boot sequence: seed star → RV constellation → countdown → disperse. Any key or click skips. */
 export function Loader({ onComplete }: { onComplete: () => void }) {
-  const [phase, setPhase] = useState(0);
+  const reduced = useReducedMotion();
+  const [phase, setPhase] = useState<Phase>("seed");
+  const [lines, setLines] = useState(0);
+  const [drawLines, setDrawLines] = useState(false);
+  const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
+    const timers: number[] = [];
+    const at = (ms: number, fn: () => void) => timers.push(window.setTimeout(fn, ms));
 
-    // Sequence Timings
-    const t1 = setTimeout(() => setPhase(1), 1500); // 1.5s: Form RV & Starfield
-    const t2 = setTimeout(() => setPhase(2), 5000); // 5.0s: Wait 1s after form (2.5s) then Fade out
-    const t3 = setTimeout(() => {
-      document.body.style.overflow = '';
-      onComplete();
-    }, 6500); // 6.5s: Complete and unmount
+    if (reduced) {
+      at(300, onComplete);
+    } else {
+      at(T_FORM, () => setPhase("form"));
+      BOOT_LINES.forEach((_, i) => at(T_FORM + 150 + i * 230, () => setLines(i + 1)));
+      at(T_LINES, () => setDrawLines(true));
+      [3, 2, 1, 0].forEach((n, i) => at(T_COUNT + i * 320, () => setCount(n)));
+      at(T_DISPERSE, () => setPhase("disperse"));
+      at(T_DONE, onComplete);
+    }
 
-    return () => { 
-      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3);
-      document.body.style.overflow = '';
+    const skip = () => onComplete();
+    window.addEventListener("keydown", skip);
+    window.addEventListener("pointerdown", skip);
+    return () => {
+      timers.forEach(clearTimeout);
+      window.removeEventListener("keydown", skip);
+      window.removeEventListener("pointerdown", skip);
+      document.body.style.overflow = "";
     };
-  }, [onComplete]);
+  }, [onComplete, reduced]);
+
+  const dispersing = phase === "disperse";
+  const formed = phase !== "seed";
+
+  const starAnim = (p: Pt, restOpacity: number) => ({
+    x: dispersing ? p.dx : formed ? p.x : CX,
+    y: dispersing ? p.dy : formed ? p.y : CY,
+    opacity: dispersing ? 0 : formed ? restOpacity : 0,
+    scale: dispersing ? 1.8 : 1,
+  });
+  const starTransition = (p: Pt) =>
+    dispersing
+      ? { duration: 0.8, ease: [0.6, 0, 0.9, 0.4] as const, delay: p.delay * 0.25 }
+      : { duration: 1.1, ease: [0.16, 1, 0.3, 1] as const, delay: p.delay };
 
   return (
-    <motion.div 
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020203] overflow-hidden"
-      exit={{ opacity: 0, transition: { duration: 1.5, ease: "easeInOut" } }}
+    <motion.div
+      className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden bg-[var(--c-space)] px-4"
+      exit={{ clipPath: "inset(0 0 100% 0)", transition: { duration: 0.6, ease: [0.7, 0, 0.3, 1] } }}
+      style={{ clipPath: "inset(0 0 0% 0)" }}
+      aria-label="Loading"
+      role="status"
     >
-      <div className="relative w-full h-full flex flex-col items-center justify-center">
-        
-        {/* Galaxy Background Glow */}
-        <motion.div
-           className="absolute inset-0 z-0"
-           initial={{ opacity: 0 }}
-           animate={{ 
-             opacity: phase === 1 ? 0.6 : 0 
-           }}
-           transition={{ duration: 3, ease: "easeOut" }}
-           style={{
-             backgroundImage: 'radial-gradient(circle at center, rgba(80, 180, 255, 0.2) 0%, transparent 60%)'
-           }}
-        />
+      {/* Star chart */}
+      <motion.div
+        className="panel-corners relative w-full max-w-2xl"
+        animate={{ opacity: dispersing ? 0.9 : 1 }}
+      >
+        <div className="flex items-center justify-between px-1 pb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--c-dim)]">
+          <span>Fig. 0 — Constellation RV</span>
+          <span className="hidden sm:inline">RA 12h 00m · Dec +28° 31′</span>
+        </div>
 
-        {/* RV Constellation */}
-        <motion.div
-          className="relative z-10 w-full max-w-4xl aspect-[2/1] px-4"
-          initial={{ scale: 1, opacity: 1 }}
-          animate={{ opacity: phase === 2 ? 0 : 1 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-          style={{ willChange: "transform, opacity" }}
-        >
-          <svg viewBox="0 0 400 200" className="w-full h-full overflow-visible">
-            <defs>
-              <filter id="glow-star-lg" x="-200%" y="-200%" width="500%" height="500%">
-                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                <feMerge>
-                  <feMergeNode in="coloredBlur"/>
-                  <feMergeNode in="SourceGraphic"/>
-                </feMerge>
-              </filter>
-            </defs>
+        <svg viewBox="0 0 400 200" className="aspect-[2/1] w-full overflow-visible" aria-hidden>
+          {/* Graticule */}
+          <g stroke="var(--c-line)" strokeWidth="0.5" fill="none">
+            {[50, 100, 150].map((y) => (
+              <line key={y} x1="0" y1={y} x2="400" y2={y} strokeDasharray="1 4" />
+            ))}
+            {[100, 200, 300].map((x) => (
+              <line key={x} x1={x} y1="0" x2={x} y2="200" strokeDasharray="1 4" />
+            ))}
+          </g>
 
-            {/* Central Initial Star */}
-            <motion.circle
-              cx="200" cy="100" r="3" fill="#ffffff" filter="url(#glow-star-lg)"
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ 
-                scale: phase === 0 ? [0, 2, 1] : 0, 
-                opacity: phase === 0 ? [0, 1, 1] : 0 
-              }}
-              transition={{ duration: 1.5, ease: "easeOut" }}
+          {/* Constellation lines */}
+          <g stroke="var(--c-cream)" strokeWidth="0.6" fill="none" strokeDasharray="3 2.5">
+            {EDGES.map(([a, b], i) => (
+              <motion.line
+                key={i}
+                x1={ANCHORS[a][0]}
+                y1={ANCHORS[a][1]}
+                x2={ANCHORS[b][0]}
+                y2={ANCHORS[b][1]}
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{
+                  pathLength: drawLines ? 1 : 0,
+                  opacity: dispersing ? 0 : drawLines ? 0.45 : 0,
+                }}
+                transition={dispersing ? { duration: 0.25 } : { duration: 0.45, delay: i * 0.04 }}
+              />
+            ))}
+          </g>
+
+          {/* Seed star */}
+          <motion.g
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: formed ? 0 : 1, scale: formed ? 0 : 1 }}
+            transition={{ duration: formed ? 0.3 : 0.5, ease: "easeOut" }}
+          >
+            <rect x={CX - 2.5} y={CY - 2.5} width="5" height="5" fill="var(--c-cream)" />
+            <rect x={CX - 9} y={CY - 0.75} width="4" height="1.5" fill="var(--c-cream)" />
+            <rect x={CX + 5} y={CY - 0.75} width="4" height="1.5" fill="var(--c-cream)" />
+            <rect x={CX - 0.75} y={CY - 9} width="1.5" height="4" fill="var(--c-cream)" />
+            <rect x={CX - 0.75} y={CY + 5} width="1.5" height="4" fill="var(--c-cream)" />
+          </motion.g>
+
+          {/* Background field */}
+          {STARS.field.map((p, i) => (
+            <motion.rect
+              key={`f${i}`}
+              width={p.size}
+              height={p.size}
+              fill={p.color}
+              initial={{ x: CX, y: CY, opacity: 0 }}
+              animate={starAnim(p, 0.4)}
+              transition={starTransition(p)}
             />
+          ))}
 
-            {/* Particles */}
-            {POINTS.map((p, i) => {
-              if (p.isBg) {
-                const strokeThickness = Math.random() * 1.5 + 0.3;
-                return (
-                  <motion.line
-                    key={i}
-                    stroke={p.color}
-                    strokeWidth={strokeThickness}
-                    strokeLinecap="round"
-                    initial={{ x1: 200, y1: 100, x2: 200, y2: 100, opacity: 0 }}
-                    animate={{ 
-                      x1: phase >= 2 ? p.dispX : (phase >= 1 ? p.x : 200), 
-                      y1: phase >= 2 ? p.dispY : (phase >= 1 ? p.y : 100),
-                      x2: phase >= 2 ? p.dispX : (phase >= 1 ? p.x : 200), 
-                      y2: phase >= 2 ? p.dispY : (phase >= 1 ? p.y : 100),
-                      opacity: phase >= 2 ? 0 : (phase >= 1 ? 0.3 : 0),
-                    }}
-                    transition={{ 
-                      duration: phase >= 2 ? 1.5 : 2.5, 
-                      ease: phase >= 2 ? "easeOut" : [0.16, 1, 0.3, 1] 
-                    }}
-                  />
-                );
-              }
+          {/* Letter stars */}
+          {STARS.letter.map((p, i) => (
+            <motion.rect
+              key={`l${i}`}
+              width={p.size}
+              height={p.size}
+              fill={p.color}
+              initial={{ x: CX, y: CY, opacity: 0 }}
+              animate={starAnim(p, 0.9)}
+              transition={starTransition(p)}
+            />
+          ))}
 
-              // "RV" Initials
-              return (
-                <motion.circle
-                  key={i}
-                  r={Math.random() * 1.5 + 1.2}
-                  fill={p.color}
-                  filter="url(#glow-star-lg)"
-                  initial={{ cx: 200, cy: 100, opacity: 0 }}
-                  animate={{ 
-                    cx: phase >= 2 ? p.dispX : (phase >= 1 ? p.x : 200), 
-                    cy: phase >= 2 ? p.dispY : (phase >= 1 ? p.y : 100),
-                    opacity: phase >= 2 ? 0 : (phase >= 1 ? 1 : 0)
-                  }}
-                  transition={{ 
-                    duration: phase >= 2 ? 1.5 : 2.5, 
-                    ease: phase >= 2 ? "easeOut" : [0.16, 1, 0.3, 1], // Apple-like spring
-                    delay: phase === 1 ? Math.random() * 0.8 : 0,
-                  }}
-                />
-              );
-            })}
-          </svg>
-        </motion.div>
-      </div>
+          {/* Anchor stars — bigger, with a pixel cross */}
+          {STARS.anchors.map((p, i) => (
+            <motion.g
+              key={`a${i}`}
+              initial={{ x: CX, y: CY, opacity: 0 }}
+              animate={starAnim(p, 1)}
+              transition={starTransition(p)}
+            >
+              <rect x={-2} y={-2} width="4" height="4" fill={p.color} />
+              <rect x={-5.5} y={-0.5} width="2.5" height="1" fill={p.color} />
+              <rect x={3} y={-0.5} width="2.5" height="1" fill={p.color} />
+              <rect x={-0.5} y={-5.5} width="1" height="2.5" fill={p.color} />
+              <rect x={-0.5} y={3} width="1" height="2.5" fill={p.color} />
+            </motion.g>
+          ))}
+
+          {/* Chart labels */}
+          <motion.g
+            className="font-mono"
+            fontSize="6"
+            letterSpacing="1"
+            fill="var(--c-dim)"
+            animate={{ opacity: drawLines && !dispersing ? 1 : 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <text x="108" y="36">α RT</text>
+            <text x="268" y="166">β VI</text>
+            <text x="306" y="36">γ</text>
+          </motion.g>
+        </svg>
+      </motion.div>
+
+      {/* Boot log + countdown */}
+      <motion.div
+        className="mt-6 grid w-full max-w-2xl grid-cols-[1fr_auto] items-end gap-6 border-t border-[var(--c-line)] pt-4"
+        animate={{ opacity: dispersing ? 0 : 1 }}
+        transition={{ duration: 0.4 }}
+      >
+        <div className="min-h-[7.5rem] font-mono text-[11px] leading-6 text-[var(--c-cream)] sm:text-xs">
+          {BOOT_LINES.slice(0, lines).map((l, i) => (
+            <div key={l} className={i === BOOT_LINES.length - 1 ? "text-[var(--c-mustard)]" : ""}>
+              <span className="text-[var(--c-dim)]">&gt; </span>
+              {l}
+            </div>
+          ))}
+          {lines < BOOT_LINES.length && <span className="animate-blink inline-block h-3.5 w-2 translate-y-0.5 bg-[var(--c-cream)]" />}
+        </div>
+        <div className="text-right">
+          <div className="label text-[10px]">T-minus</div>
+          <div className="font-display text-6xl font-black leading-none text-[var(--c-red)] tabular-nums sm:text-7xl">
+            {count === null ? "--" : count === 0 ? "GO" : `0${count}`}
+          </div>
+        </div>
+      </motion.div>
+
+      <p className="label absolute bottom-6 text-[10px] opacity-60">Press any key to skip</p>
+      <div className="stripes-v absolute bottom-0 left-0 h-1.5 w-full" />
     </motion.div>
   );
 }
-
