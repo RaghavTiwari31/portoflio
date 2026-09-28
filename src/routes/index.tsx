@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useInView } from "framer-motion";
-import { ArrowUpRight, ChevronLeft, ChevronRight, Copy, FileText, Github, Linkedin, Mail, X } from "lucide-react";
+import { ArrowUpRight, ChevronLeft, ChevronRight, Copy, FileText, Github, Globe, Linkedin, Mail, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { AltitudeRail } from "@/components/AltitudeRail";
@@ -572,9 +572,18 @@ function Missions() {
                   ))}
                 </div>
                 <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-[var(--c-line)] pt-6">
-                  <ExtLink href={p.github} className="btn btn-primary">
-                    <Github className="h-4 w-4" /> View source <ArrowUpRight className="h-3.5 w-3.5" />
-                  </ExtLink>
+                  <div className="flex flex-wrap gap-3">
+                    {p.live && (
+                      <ExtLink href={p.live} className="btn btn-primary">
+                        <Globe className="h-4 w-4" /> Launch live <ArrowUpRight className="h-3.5 w-3.5" />
+                      </ExtLink>
+                    )}
+                    {p.github && (
+                      <ExtLink href={p.github} className={p.live ? "btn" : "btn btn-primary"}>
+                        <Github className="h-4 w-4" /> View source <ArrowUpRight className="h-3.5 w-3.5" />
+                      </ExtLink>
+                    )}
+                  </div>
                   <div className="flex items-center gap-3">
                     <span className="font-mono text-xs tabular-nums text-[var(--c-dim)]">
                       {String(idx + 1).padStart(2, "0")} / {String(PROJECTS.length).padStart(2, "0")}
