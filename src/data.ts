@@ -42,12 +42,13 @@ export const STATS = [
 ];
 
 export const SKILLS: { code: string; title: string; items: string[] }[] = [
-  { code: "LNG", title: "Programming Languages", items: ["Python", "C", "C++", "SQL", "JavaScript", "HTML", "CSS", "Java"] },
-  { code: "FWK", title: "Frameworks & Libraries", items: ["Streamlit", "Dash", "React", "Pandas", "NumPy", "Scikit-learn", "Matplotlib", "Seaborn"] },
-  { code: "AI", title: "Technologies & Concepts", items: ["Prompt Engineering", "Retrieval-Augmented Generation (RAG)", "LLM", "Generative AI", "AI Agents", "Data Analytics", "A/B Testing"] },
-  { code: "API", title: "Backend", items: ["REST APIs", "API Integration", "Async Processing", "JSON", "FastAPI"] },
-  { code: "DB", title: "Databases", items: ["PostgreSQL", "MySQL", "VectorDB"] },
-  { code: "TLS", title: "Tools", items: ["Vercel", "Git", "GitHub", "Claude", "Jira", "MS Excel / Google Sheets", "Azure Document Intelligence", "AWS Textract"] },
+  { code: "LNG", title: "Programming Languages", items: ["Python", "TypeScript", "JavaScript", "SQL", "C", "C++", "Java", "HTML", "CSS"] },
+  { code: "FWK", title: "Frameworks & Libraries", items: ["FastAPI", "React", "Next.js", "NestJS", "Tailwind CSS", "Pydantic", "Pandas", "NumPy", "Scikit-learn", "Streamlit", "Dash", "Matplotlib", "Seaborn"] },
+  { code: "AI", title: "Technologies & Concepts", items: ["LLM", "Generative AI", "Multi-Provider LLM Orchestration (OpenAI, Anthropic, Gemini)", "Document AI / OCR", "Structured LLM Extraction", "Retrieval-Augmented Generation (RAG)", "Prompt Engineering", "AI Agents", "Risk & Fraud Scoring", "Data Analytics", "A/B Testing"] },
+  { code: "API", title: "Backend", items: ["REST APIs", "API Integration", "Webhooks", "Async Processing", "Task Queues (Celery, Redis)", "Web Security (CSRF, CORS, CSP, Cookies)", "CRM Integration (Zoho, Salesforce, MS Dynamics)", "JSON"] },
+  { code: "DB", title: "Databases", items: ["PostgreSQL", "MySQL", "Redis", "SQLAlchemy", "Alembic", "Prisma", "VectorDB"] },
+  { code: "CLD", title: "Cloud & DevOps", items: ["Docker", "Docker Compose", "Google Cloud Run", "Google Cloud Storage", "Vercel"] },
+  { code: "TLS", title: "Tools", items: ["Git", "GitHub", "Pytest", "Jest", "Azure Document Intelligence", "AWS Textract", "Claude", "Jira", "MS Excel / Google Sheets"] },
   { code: "OPS", title: "Methodologies & Professional", items: ["Agile", "SDLC", "Research", "Analytical Thinking", "Product Roadmaps", "Market Research", "Competitor Analysis"] },
 ];
 
@@ -60,12 +61,13 @@ export const EXPERIENCE = [
     end: "Present",
     active: true,
     points: [
-      "Built and deployed DocTranslator, an AI-powered document translation platform with layout preservation, collaborating with DevOps.",
-      "Built an AI-powered admissions evaluation platform, automating document-based application evaluation and decision support.",
-      "Developed backend features using FastAPI, PostgreSQL, and Docker, integrating OCR and LLM services.",
-      "Owned and maintained internal product repositories, delivering feature enhancements and resolving issues.",
+      "Built EDMO's AI Application Evaluator, an admissions platform scoring 15+ applicant document types against program policies; demoed to City Colleges of Chicago, Iowa State University and NU.",
+      "Developed its pipeline with FastAPI, Celery, Redis and PostgreSQL, using Azure OCR and multi-provider LLMs (OpenAI, Anthropic, Gemini) with source-cited, audited decisions.",
+      "Added pre-evaluation risk routing (ID verification, residency, source integrity), integrated with Zoho CRM and NestJS microservices.",
+      "Embedded the Document Intelligence product in Microsoft Dynamics via CHIPS cookies and CSRF/CSP hardening; demoed to University of the People.",
+      "Built and deployed DocTranslator, a layout-preserving AI translation platform, made stateless (PostgreSQL + GCS) to scale on Cloud Run.",
     ],
-    tags: ["FastAPI", "PostgreSQL", "Docker", "OCR", "LLM"],
+    tags: ["FastAPI", "Celery", "PostgreSQL", "LLM", "OCR", "Next.js", "NestJS", "Docker", "Cloud Run"],
   },
   {
     role: "Data Management Specialist Intern",
