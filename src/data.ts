@@ -86,6 +86,41 @@ export const EXPERIENCE = [
 
 export const PROJECTS = [
   {
+    id: "nirikshak",
+    name: "Nirikshak",
+    designation: "NRK-26",
+    tag: "SIH 2026 · SAT-SA · SOC Analytics",
+    date: "Sep 2026",
+    stack: ["FastAPI", "PostgreSQL", "SQLAlchemy", "Pandas", "Scikit-learn", "React 19", "TypeScript", "ECharts", "Docker"],
+    live: "https://nirikshak-tau.vercel.app",
+    github: "https://github.com/RaghavTiwari31/Nirikshak",
+    color: "var(--c-teal)",
+    points: [
+      "Built SAT-SA, a Supervisory Analytics Tool for SOC Assessment, for the Smart India Hackathon 2026 NCIIPC problem statement, used to audit SOC alert and case-management submissions from Critical Sector Entities.",
+      "Designed a configurable signal engine that detects execution gaps and “negative space” (what a SOC should have reported but didn't), then ranks entities and samples cases for manual review.",
+      "Backed every finding with explainable, auditable evidence: reproducible analysis runs, a hash-chained tamper-evident audit log, and precision/recall validation against synthetic ground truth.",
+      "Built a data-ingestion pipeline with a published data contract, automatic column mapping and validation for CSV/JSON/NDJSON submissions, plus a synthetic CSE generator with planted weaknesses.",
+      "Shipped a fully offline, air-gapped Docker deployment with role-based access, pseudonymised analyst identities, strict CSP and login throttling, alongside a cloud demo on Vercel, Render and Neon.",
+    ],
+  },
+  {
+    id: "vajra",
+    name: "Vajra",
+    designation: "VJR-26",
+    tag: "ECDAT · Post-Quantum Crypto Discovery",
+    date: "Sep 2026",
+    stack: ["Next.js 16", "TypeScript", "Neon Postgres", "Prisma", "GitHub Apps", "Webhooks", "CycloneDX", "Recharts"],
+    live: "https://vajra-swart-ten.vercel.app",
+    github: "https://github.com/RaghavTiwari31/Vajra",
+    color: "var(--c-mustard)",
+    points: [
+      "Built an Enterprise Cryptographic Discovery & Analysis Tool (ECDAT) that finds every cryptographic asset in connected GitHub repositories, scanning on connect and on every push.",
+      "Wrote a custom TypeScript discovery engine with rule packs for crypto call-sites, dependency manifests, certificates, keys, protocols and hard-coded secrets.",
+      "Scored quantum risk for each asset (PQC safety, Mosca's theorem timelines) and recommended post-quantum migration paths.",
+      "Integrated as a GitHub App with verified webhooks, a DB-backed job queue and Check Runs, and exported findings as a CycloneDX 1.6 CBOM (Cryptographic Bill of Materials).",
+    ],
+  },
+  {
     id: "revguard",
     name: "RevGuard",
     designation: "RVG-26",
