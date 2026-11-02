@@ -241,7 +241,7 @@ export const ACHIEVEMENTS = [
     rank: "1ST",
     title: "IndustrySolve 2025",
     sub: "Ideathon & Productathon · IIIT Delhi",
-    body: "Secured 1st place in both the Ideathon and Productathon rounds among 150+ teams, delivering a fully functional prototype that secured a ₹40,000 award.",
+    body: "Secured 1st place in both Ideathon and Productathon rounds among 150+ teams, delivering a prototype of a fully-functional smart glasses for the visually impaired that secured a ₹40,000 award.",
     proof: "/proofs/iiit delhi proof.jpeg",
     color: "var(--c-red)",
     year: "2025",
