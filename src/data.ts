@@ -54,7 +54,7 @@ export const SKILLS: { code: string; title: string; items: string[] }[] = [
 
 export const EXPERIENCE = [
   {
-    role: "Product Research Intern",
+    role: "Product (AI & Research) Intern",
     org: "EDMO (iSchoolConnect India Pvt. Ltd.)",
     place: "Noida, India",
     start: "Jul 2026",
