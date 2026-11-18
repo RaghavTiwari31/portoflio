@@ -58,8 +58,8 @@ export const EXPERIENCE = [
     org: "EDMO (iSchoolConnect India Pvt. Ltd.)",
     place: "Noida, India",
     start: "Jul 2026",
-    end: "Present",
-    active: true,
+    end: "Oct 2026",
+    active: false,
     points: [
       "Built EDMO's AI Application Evaluator, an admissions platform scoring 15+ applicant document types against program policies; demoed to City Colleges of Chicago, Iowa State University and NU.",
       "Developed its pipeline with FastAPI, Celery, Redis and PostgreSQL, using Azure OCR and multi-provider LLMs (OpenAI, Anthropic, Gemini) with source-cited, audited decisions.",
